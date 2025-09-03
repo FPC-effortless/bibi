@@ -9,6 +9,9 @@ import { defaultBackupConfig } from '@/lib/backup-manager';
 // Initialize backup service
 const backupService = new BackupService(defaultBackupConfig, defaultBackupServiceConfig);
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

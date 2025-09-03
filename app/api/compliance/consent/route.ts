@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';nn// Force dynamic renderingnexport const dynamic = 'force-dynamic';
 import { complianceManager, CookieConsent } from '@/lib/legal-compliance';
 
 export async function POST(request: NextRequest) {

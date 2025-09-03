@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { DM_Sans } from "next/font/google"
 import { Playfair_Display } from "next/font/google"
 import "./globals.css"
@@ -31,7 +31,6 @@ export const metadata: Metadata = {
   creator: "bibiere",
   publisher: "bibiere",
   manifest: "/manifest.json",
-  themeColor: "#8B1538",
   openGraph: {
     title: "bibiere - Timeless Luxury Redefined",
     description: "Timeless luxury redefined. Discover bibiere's collection of exquisite pieces crafted for the discerning individual.",
@@ -49,6 +48,10 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "bibiere",
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#8B1538",
 }
 
 export default function RootLayout({

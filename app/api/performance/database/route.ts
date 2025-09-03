@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';nn// Force dynamic renderingnexport const dynamic = 'force-dynamic';
 import { dbPerformanceMonitor } from '@/lib/database-performance-monitor';
 
 export async function GET(request: NextRequest) {

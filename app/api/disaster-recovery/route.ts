@@ -2,7 +2,7 @@
  * Disaster Recovery API - Manage disaster recovery operations and status
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';nn// Force dynamic renderingnexport const dynamic = 'force-dynamic';
 import { DisasterRecoveryManager, defaultDisasterRecoveryConfig } from '@/lib/disaster-recovery';
 
 // Initialize disaster recovery manager (in production, this would be a singleton)

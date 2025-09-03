@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';nn// Force dynamic renderingnexport const dynamic = 'force-dynamic';
 import { createDataExportRequest, getUserDataRequests } from '@/lib/user-data-rights';
 
 export async function POST(request: NextRequest) {
