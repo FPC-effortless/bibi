@@ -36,25 +36,29 @@ export default function OfflinePage() {
   })
 
   useEffect(() => {
-    // Check online status
-    setIsOnline(navigator.onLine)
+    // Check online status (only in browser)
+    if (typeof window !== 'undefined') {
+      setIsOnline(navigator.onLine)
 
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
+      const handleOnline = () => setIsOnline(true)
+      const handleOffline = () => setIsOnline(false)
 
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
+      window.addEventListener('online', handleOnline)
+      window.addEventListener('offline', handleOffline)
 
-    // Load cached content from localStorage or service worker
-    loadCachedContent()
+      // Load cached content from localStorage or service worker
+      loadCachedContent()
 
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
+      return () => {
+        window.removeEventListener('online', handleOnline)
+        window.removeEventListener('offline', handleOffline)
+      }
     }
   }, [])
 
   const loadCachedContent = () => {
+    if (typeof window === 'undefined') return
+    
     try {
       // Load from localStorage (this would typically come from service worker cache)
       const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]')
@@ -72,6 +76,8 @@ export default function OfflinePage() {
   }
 
   const handleRetryConnection = () => {
+    if (typeof window === 'undefined') return
+    
     if (navigator.onLine) {
       window.location.reload()
     } else {
@@ -87,7 +93,7 @@ export default function OfflinePage() {
     }
   }
 
-  if (isOnline) {
+  if (isOnline && typeof window !== 'undefined') {
     // Redirect to home if back online
     window.location.href = '/'
     return null

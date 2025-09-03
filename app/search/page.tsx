@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -79,7 +79,7 @@ const colors = ["All", "Black", "Navy", "Camel", "Multi", "White", "Burgundy"]
 const materials = ["All", "Silk", "Cashmere", "Wool", "Cotton", "Linen"]
 const sizes = ["All", "XS", "S", "M", "L", "XL"]
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
   const [products, setProducts] = useState(mockProducts)
@@ -393,5 +393,20 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-bibiere-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading search...</p>
+        </div>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   )
 }
