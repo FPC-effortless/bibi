@@ -1,4 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';nn// Force dynamic renderingnexport const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from 'next/server';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { autoScalingManager } from '@/lib/auto-scaling-manager';
 import { performanceBottleneckDetector } from '@/lib/performance-bottleneck-detector';
 

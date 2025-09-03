@@ -3,7 +3,10 @@
  * Collects and processes performance metrics from the client
  */
 
-import { NextRequest, NextResponse } from 'next/server';nn// Force dynamic renderingnexport const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from 'next/server';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 interface PerformanceMetric {
   type: 'web_vital' | 'custom_metric' | 'user_experience' | 'error';

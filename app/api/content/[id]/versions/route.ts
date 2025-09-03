@@ -1,4 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';nn// Force dynamic renderingnexport const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from 'next/server';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { contentManager } from '@/lib/content-manager';
 
 export async function GET(
