@@ -1,0 +1,13 @@
+# Screenshots directory
+This directory will contain screenshots captured during test execution.
+Screenshots are automatically taken when tests fail or when explicitly requested.
+
+## Structure
+- Screenshots are organized by test execution timestamp
+- Filenames include browser, device, and test case information
+- Failed test screenshots are prefixed with "failure-"
+- Manual screenshots are prefixed with "manual-"
+
+## Cleanup
+Screenshots should be periodically cleaned up to avoid excessive disk usage.
+Consider implementing a retention policy based on age or test run count.

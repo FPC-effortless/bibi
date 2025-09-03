@@ -1,0 +1,99 @@
+{
+  "common": {
+    "loading": "Wird geladen...",
+    "error": "Ein Fehler ist aufgetreten",
+    "retry": "Erneut versuchen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirm": "Bestätigen",
+    "close": "Schließen",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "clear": "Löschen",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen",
+    "view_all": "Alle anzeigen",
+    "show_more": "Mehr anzeigen",
+    "show_less": "Weniger anzeigen"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "collections": "Kollektionen",
+    "new_arrivals": "Neuheiten",
+    "dresses": "Kleider",
+    "lookbook": "Lookbook",
+    "journal": "Journal",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "account": "Mein Konto",
+    "wishlist": "Wunschliste",
+    "cart": "Warenkorb",
+    "checkout": "Zur Kasse"
+  },
+  "hero": {
+    "title": "Zeitloser Luxus neu definiert",
+    "subtitle": "Entdecken Sie bibieres Kollektion exquisiter Stücke für den anspruchsvollen Menschen",
+    "cta_button": "Kollektion erkunden"
+  },
+  "products": {
+    "featured_collection": "Ausgewählte Kollektion",
+    "new_arrivals": "Neuheiten",
+    "best_sellers": "Bestseller",
+    "on_sale": "Im Angebot",
+    "add_to_cart": "In den Warenkorb",
+    "add_to_wishlist": "Zur Wunschliste hinzufügen",
+    "remove_from_wishlist": "Von Wunschliste entfernen",
+    "quick_view": "Schnellansicht",
+    "size_guide": "Größentabelle",
+    "product_details": "Produktdetails",
+    "care_instructions": "Pflegehinweise",
+    "shipping_returns": "Versand & Rücksendung",
+    "reviews": "Bewertungen",
+    "write_review": "Bewertung schreiben",
+    "out_of_stock": "Nicht vorrätig",
+    "in_stock": "Auf Lager",
+    "low_stock": "Nur noch {{count}} verfügbar",
+    "select_size": "Größe wählen",
+    "select_color": "Farbe wählen",
+    "quantity": "Menge",
+    "price": "Preis",
+    "sale_price": "Angebotspreis",
+    "regular_price": "Regulärer Preis",
+    "you_save": "Sie sparen {{amount}}",
+    "free_shipping": "Kostenloser Versand",
+    "rating": "Bewertung: {{rating}} von 5 Sternen"
+  },
+  "footer": {
+    "newsletter_title": "Bleiben Sie in Kontakt",
+    "newsletter_subtitle": "Abonnieren Sie Updates zu neuen Produkten und exklusiven Angeboten",
+    "newsletter_placeholder": "E-Mail-Adresse eingeben",
+    "newsletter_subscribe": "Abonnieren",
+    "newsletter_success": "Vielen Dank für Ihr Abonnement!",
+    "copyright": "© {{year}} bibiere. Alle Rechte vorbehalten."
+  },
+  "seo": {
+    "site_name": "bibiere",
+    "brand_name": "bibiere",
+    "tagline": "Zeitloser Luxus neu definiert",
+    "default_title": "bibiere - Zeitloser Luxus neu definiert",
+    "default_description": "Zeitloser Luxus neu definiert. Entdecken Sie bibieres Kollektion exquisiter Stücke für den anspruchsvollen Menschen.",
+    "product_title_template": "{{productName}} - Premium Mode | bibiere",
+    "collection_title_template": "{{collectionName}} Kollektion - Luxusmode | bibiere",
+    "journal_title_template": "{{articleTitle}} | bibiere Journal",
+    "keywords": {
+      "primary": ["Luxusmode", "zeitloses Design", "Premium-Qualität", "elegante Kleidung", "anspruchsvoller Stil"],
+      "secondary": ["Haute Couture", "deutsche Mode", "Berliner Luxus", "Eleganz", "Verfeinerung"],
+      "brand": ["bibiere", "bibiere berlin", "modehaus bibiere", "designer bibiere"]
+    },
+    "structured_data": {
+      "organization_name": "bibiere",
+      "organization_description": "Luxus-Modehaus spezialisiert auf zeitlose und raffinierte Kreationen",
+      "brand_description": "Deutsche Luxusmodemarke mit außergewöhnlichen Stücken"
+    }
+  }
+}
