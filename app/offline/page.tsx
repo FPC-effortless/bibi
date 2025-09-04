@@ -37,12 +37,18 @@ export default function OfflinePage() {
 
   useEffect(() => {
     // Check online status (only in browser)
+    const checkOnlineStatus = () => {
+      if (typeof window !== 'undefined') {
+        setIsOnline(navigator.onLine)
+      }
+    }
+
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    // Only add event listeners if window is available
     if (typeof window !== 'undefined') {
-      setIsOnline(navigator.onLine)
-
-      const handleOnline = () => setIsOnline(true)
-      const handleOffline = () => setIsOnline(false)
-
+      checkOnlineStatus()
       window.addEventListener('online', handleOnline)
       window.addEventListener('offline', handleOffline)
 

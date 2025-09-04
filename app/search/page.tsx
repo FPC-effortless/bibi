@@ -81,7 +81,14 @@ const sizes = ["All", "XS", "S", "M", "L", "XL"]
 
 function SearchContent() {
   const searchParams = useSearchParams()
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Initialize search query from URL params after component mounts
+  useEffect(() => {
+    if (searchParams) {
+      setSearchQuery(searchParams.get('q') || '')
+    }
+  }, [searchParams])
   const [products, setProducts] = useState(mockProducts)
   const [filteredProducts, setFilteredProducts] = useState(mockProducts)
   const [showFilters, setShowFilters] = useState(false)
