@@ -5,6 +5,18 @@ const createJestConfig = nextJest({
   dir: './',
 })
 
+const babelTransform = {
+  '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+}
+
+const sharedProjectConfig = {
+  transform: babelTransform,
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1',
+  },
+  moduleDirectories: ['node_modules', '<rootDir>/'],
+}
+
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   testEnvironment: 'jsdom',
@@ -37,22 +49,14 @@ const customJestConfig = {
   testEnvironmentOptions: {
     customExportConditions: [''],
   },
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' } }],
-        ['@babel/preset-react', { runtime: 'automatic' }],
-        '@babel/preset-typescript',
-      ],
-      plugins: [
-        '@babel/plugin-transform-runtime',
-      ],
-    }],
-  },
+  transform: babelTransform,
   // User Flow Validation Test Configuration
   projects: [
     {
       displayName: 'unit',
+      ...sharedProjectConfig,
+      testEnvironment: 'jsdom',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       testMatch: [
         '<rootDir>/__tests__/components/**/*.test.{js,jsx,ts,tsx}',
         '<rootDir>/__tests__/lib/**/*.test.{js,jsx,ts,tsx}',
@@ -67,18 +71,13 @@ const customJestConfig = {
     },
     {
       displayName: 'user-flow-validation',
+      ...sharedProjectConfig,
+      testEnvironment: 'jsdom',
+      setupFilesAfterEnv: ['<rootDir>/__tests__/user-flow-validation/config/jest.setup.js'],
       testMatch: [
         '<rootDir>/__tests__/user-flow-validation/**/*.test.{js,jsx,ts,tsx}',
       ],
-      testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/__tests__/user-flow-validation/config/jest.setup.js'],
       maxWorkers: 1,
-      // Specific configuration for user flow validation tests
-      globals: {
-        'ts-jest': {
-          useESM: true,
-        },
-      },
     },
   ],
 }
