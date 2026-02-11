@@ -1,7 +1,5 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { DM_Sans } from "next/font/google"
-import { Playfair_Display } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
@@ -9,18 +7,7 @@ import ErrorBoundary from "@/components/error-boundary"
 import PWAInstallPrompt from "@/components/pwa-install-prompt"
 import MobileOptimizationProvider from "@/components/mobile-optimization-provider"
 import CookieConsentBanner from "@/components/cookie-consent-banner"
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-dm-sans",
-})
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-playfair",
-})
+import { CommerceProvider } from "@/components/commerce-provider"
 
 export const metadata: Metadata = {
   title: "bibiere - Timeless Luxury Redefined",
@@ -60,15 +47,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${playfair.variable}`}>
+    <html lang="en">
       <body className="font-sans antialiased">
         <ErrorBoundary>
           <MobileOptimizationProvider>
-            <Header />
-            {children}
-            <Footer />
-            <PWAInstallPrompt />
-            <CookieConsentBanner />
+            <CommerceProvider>
+              <Header />
+              {children}
+              <Footer />
+              <PWAInstallPrompt />
+              <CookieConsentBanner />
+            </CommerceProvider>
           </MobileOptimizationProvider>
         </ErrorBoundary>
       </body>

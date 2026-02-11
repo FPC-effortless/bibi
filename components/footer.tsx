@@ -106,21 +106,21 @@ export default function Footer() {
               <h4 className="text-sm font-medium text-sidebar-foreground/80">Follow bibiere</h4>
               <div className="flex gap-4">
                 <a
-                  href="#"
+                  href="https://instagram.com/bibiere"
                   className="text-sidebar-foreground hover:text-sidebar-accent transition-all duration-200 hover:scale-110 p-2 hover:bg-sidebar-accent/10 rounded-full"
                   aria-label="Follow bibiere on Instagram"
                 >
                   <Instagram className="h-5 w-5" />
                 </a>
                 <a
-                  href="#"
+                  href="https://pinterest.com/bibiere"
                   className="text-sidebar-foreground hover:text-sidebar-accent transition-all duration-200 hover:scale-110 p-2 hover:bg-sidebar-accent/10 rounded-full"
                   aria-label="Follow bibiere on Pinterest"
                 >
                   <PinterestIcon />
                 </a>
                 <a
-                  href="#"
+                  href="https://facebook.com/bibiere"
                   className="text-sidebar-foreground hover:text-sidebar-accent transition-all duration-200 hover:scale-110 p-2 hover:bg-sidebar-accent/10 rounded-full"
                   aria-label="Follow bibiere on Facebook"
                 >

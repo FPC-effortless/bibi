@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import CheckoutProgress from "@/components/checkout-progress"
 import ShippingForm, { type ShippingData } from "@/components/shipping-form"
 import PaymentForm, { type PaymentData } from "@/components/payment-form"
 import OrderReview from "@/components/order-review"
 
 export default function CheckoutPage() {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [shippingData, setShippingData] = useState<ShippingData | null>(null)
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null)
@@ -30,8 +32,8 @@ export default function CheckoutPage() {
   }
 
   const handleOrderComplete = () => {
-    // Handle order completion
-    alert("Order completed successfully!")
+    const orderId = `BB-${Date.now()}`
+    router.push(`/order/confirmation/${orderId}`)
   }
 
   return (

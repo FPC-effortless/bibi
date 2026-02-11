@@ -72,7 +72,6 @@ const customJestConfig = {
       ],
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/__tests__/user-flow-validation/config/jest.setup.js'],
-      timeout: 30000,
       maxWorkers: 1,
       // Specific configuration for user flow validation tests
       globals: {

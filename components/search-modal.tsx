@@ -54,6 +54,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [sortBy, setSortBy] = useState<SortOption>('relevance')
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1)
   
   // Enhanced filters state
   const [filters, setFilters] = useState<SearchFilters>({
@@ -273,6 +274,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setSearchResults([])
       setSearchSuggestions([])
       setShowSuggestions(false)
+      setActiveSuggestionIndex(-1)
       return
     }
 
@@ -302,6 +304,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setShowFilters(false)
       setShowSuggestions(false)
       setSearchSuggestions([])
+      setActiveSuggestionIndex(-1)
       setSortBy('relevance')
       setFilters({
         categories: [],
@@ -375,9 +378,38 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               onChange={(e) => {
                 setSearchQuery(e.target.value)
                 setShowSuggestions(true)
+                setActiveSuggestionIndex(-1)
               }}
               onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onBlur={() => setTimeout(() => {
+                setShowSuggestions(false)
+                setActiveSuggestionIndex(-1)
+              }, 200)}
+              onKeyDown={(e) => {
+                if (!showSuggestions || searchSuggestions.length === 0) return
+
+                if (e.key === "ArrowDown") {
+                  e.preventDefault()
+                  setActiveSuggestionIndex((prev) => (prev + 1) % searchSuggestions.length)
+                }
+
+                if (e.key === "ArrowUp") {
+                  e.preventDefault()
+                  setActiveSuggestionIndex((prev) => (prev <= 0 ? searchSuggestions.length - 1 : prev - 1))
+                }
+
+                if (e.key === "Enter" && activeSuggestionIndex >= 0) {
+                  e.preventDefault()
+                  setSearchQuery(searchSuggestions[activeSuggestionIndex])
+                  setShowSuggestions(false)
+                  setActiveSuggestionIndex(-1)
+                }
+
+                if (e.key === "Escape") {
+                  setShowSuggestions(false)
+                  setActiveSuggestionIndex(-1)
+                }
+              }}
               className="pl-12 h-14 text-lg border-2 focus:border-bibiere-gold transition-all duration-300 rounded-xl"
               autoFocus
               aria-label="Search products"
@@ -400,7 +432,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       setSearchQuery(suggestion)
                       setShowSuggestions(false)
                     }}
-                    className="w-full text-left px-4 py-3 hover:bg-bibiere-gold/5 hover:text-bibiere-gold transition-colors duration-200 first:rounded-t-lg last:rounded-b-lg"
+                    className={cn("w-full text-left px-4 py-3 hover:bg-bibiere-gold/5 hover:text-bibiere-gold transition-colors duration-200 first:rounded-t-lg last:rounded-b-lg", activeSuggestionIndex === index && "bg-bibiere-gold/10 text-bibiere-gold")}
                   >
                     <Search className="inline h-4 w-4 mr-2 text-muted-foreground" />
                     {suggestion}

@@ -8,10 +8,10 @@ import { SearchModal } from "./search-modal"
 import { CartDrawer } from "./cart-drawer"
 import { BrandLogo } from "./brand-logo"
 import { cn } from "@/lib/utils"
+import { useCommerce } from "@/components/commerce-provider"
 
 export default function Header() {
-  const [wishlistCount] = useState(3)
-  const [cartCount] = useState(2)
+  const { wishlistCount } = useCommerce()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -87,7 +87,7 @@ export default function Header() {
                 <span className="sr-only">Search</span>
               </Button>
 
-              <Link href="/account">
+              <Link href="/wishlist">
                 <Button
                   variant="ghost"
                   size="icon"
