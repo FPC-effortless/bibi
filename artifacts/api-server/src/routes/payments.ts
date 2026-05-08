@@ -12,7 +12,7 @@ const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY ?? "";
 router.post("/initialize", async (req: Request, res: Response) => {
   const auth = getAuth(req as any);
   const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   const { email, amount, currency = "NGN", metadata } = req.body as {
     email: string;
@@ -22,7 +22,7 @@ router.post("/initialize", async (req: Request, res: Response) => {
   };
 
   if (!email || !amount) {
-    return res.status(400).json({ error: "email and amount required" });
+    res.status(400).json({ error: "email and amount required" }); return;
   }
 
   try {
@@ -40,7 +40,7 @@ router.post("/initialize", async (req: Request, res: Response) => {
       .where(eq(cartItemsTable.userId, userId));
 
     if (cartItems.length === 0) {
-      return res.status(400).json({ error: "Cart is empty" });
+      res.status(400).json({ error: "Cart is empty" }); return;
     }
 
     const totalAmount = cartItems.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
@@ -68,7 +68,7 @@ router.post("/initialize", async (req: Request, res: Response) => {
 
     if (!PAYSTACK_SECRET_KEY) {
       // Return mock response if Paystack not configured
-      return res.json({
+      res.json({
         status: true,
         message: "Authorization URL created (mock)",
         data: {
@@ -77,7 +77,7 @@ router.post("/initialize", async (req: Request, res: Response) => {
           reference: `mock_${order.id}`,
         },
         orderId: order.id,
-      });
+      }); return;
     }
 
     const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
@@ -115,10 +115,10 @@ router.post("/initialize", async (req: Request, res: Response) => {
 router.post("/verify", async (req: Request, res: Response) => {
   const auth = getAuth(req as any);
   const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   const { reference } = req.body as { reference: string };
-  if (!reference) return res.status(400).json({ error: "reference required" });
+  if (!reference) { res.status(400).json({ error: "reference required" }); return; }
 
   try {
     if (!PAYSTACK_SECRET_KEY) {

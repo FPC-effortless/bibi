@@ -111,7 +111,7 @@ router.get("/bootstrap", async (req: Request, res: Response) => {
     const products = await getOrSeedProducts();
     const auth = getAuth(req as any);
     const userId = auth?.userId;
-    if (!userId) return res.json({ products, cart: [], wishlist: [] });
+    if (!userId) { res.json({ products, cart: [], wishlist: [] }); return; }
 
     await ensureUser(userId);
     const [cartRows, wishlistRows] = await Promise.all([
@@ -133,11 +133,11 @@ router.get("/bootstrap", async (req: Request, res: Response) => {
 router.post("/wishlist", async (req: Request, res: Response) => {
   const auth = getAuth(req as any);
   const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   const { productId, action } = req.body as { productId: string; action: "add" | "remove" };
   if (!productId || !["add", "remove"].includes(action)) {
-    return res.status(400).json({ error: "Invalid request" });
+    res.status(400).json({ error: "Invalid request" }); return;
   }
 
   try {
@@ -163,15 +163,15 @@ router.post("/wishlist", async (req: Request, res: Response) => {
 router.post("/cart", async (req: Request, res: Response) => {
   const auth = getAuth(req as any);
   const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   const { productId, size, color } = req.body as { productId: string; size?: string; color?: string };
-  if (!productId) return res.status(400).json({ error: "productId required" });
+  if (!productId) { res.status(400).json({ error: "productId required" }); return; }
 
   try {
     await ensureUser(userId);
     const product = await db.select().from(productsTable).where(eq(productsTable.id, productId)).limit(1);
-    if (!product.length) return res.status(404).json({ error: "Product not found" });
+    if (!product.length) { res.status(404).json({ error: "Product not found" }); return; }
 
     const existing = await db.select().from(cartItemsTable)
       .where(and(eq(cartItemsTable.userId, userId), eq(cartItemsTable.productId, productId)))
@@ -199,10 +199,10 @@ router.post("/cart", async (req: Request, res: Response) => {
 router.patch("/cart", async (req: Request, res: Response) => {
   const auth = getAuth(req as any);
   const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   const { productId, quantity } = req.body as { productId: string; quantity: number };
-  if (!productId || quantity === undefined) return res.status(400).json({ error: "productId and quantity required" });
+  if (!productId || quantity === undefined) { res.status(400).json({ error: "productId and quantity required" }); return; }
 
   try {
     if (quantity <= 0) {
@@ -228,7 +228,7 @@ router.patch("/cart", async (req: Request, res: Response) => {
 router.delete("/cart", async (req: Request, res: Response) => {
   const auth = getAuth(req as any);
   const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
   try {
     await db.delete(cartItemsTable).where(eq(cartItemsTable.userId, userId));
     res.json({ items: [] });
@@ -242,7 +242,7 @@ router.delete("/cart", async (req: Request, res: Response) => {
 router.get("/orders", async (req: Request, res: Response) => {
   const auth = getAuth(req as any);
   const userId = auth?.userId;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
   try {
     const orders = await db.select().from(ordersTable).where(eq(ordersTable.userId, userId));
     res.json({ orders });
