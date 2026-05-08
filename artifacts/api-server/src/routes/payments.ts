@@ -127,7 +127,7 @@ router.post("/verify", async (req: Request, res: Response) => {
         .set({ status: "paid", paystackStatus: "success", updatedAt: new Date() })
         .where(and(eq(ordersTable.id, reference), eq(ordersTable.userId, userId)));
       await db.delete(cartItemsTable).where(eq(cartItemsTable.userId, userId));
-      return res.json({ status: true, message: "Payment verified (mock)", paid: true });
+      res.json({ status: true, message: "Payment verified (mock)", paid: true }); return;
     }
 
     const paystackRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
