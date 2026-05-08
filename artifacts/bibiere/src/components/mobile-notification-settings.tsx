@@ -41,7 +41,7 @@ export default function MobileNotificationSettings() {
   useEffect(() => {
     const savedPreferences = getNotificationPreferences()
     if (savedPreferences) {
-      setPreferences(savedPreferences)
+      setPreferences(savedPreferences as NotificationPreferences)
     }
   }, [getNotificationPreferences])
 
