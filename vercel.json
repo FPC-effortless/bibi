@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "framework": "vite",
+  "buildCommand": "PORT=5173 BASE_PATH=/ pnpm run build",
+  "outputDirectory": "artifacts/bibiere/dist/public",
+  "installCommand": "pnpm install",
+  "cleanUrls": true
+}

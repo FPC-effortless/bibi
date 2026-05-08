@@ -1,0 +1,16 @@
+# Reports directory
+This directory will contain generated validation reports in various formats.
+
+## Report Types
+- HTML reports: Comprehensive visual reports with interactive elements
+- JSON reports: Machine-readable data for integration and analysis
+- Markdown reports: Documentation-friendly format for sharing
+- CSV reports: Spreadsheet-compatible data for analysis
+
+## File Naming Convention
+- Format: `validation-report-{timestamp}-{format}.{ext}`
+- Example: `validation-report-2024-01-15T10-30-00-html.html`
+
+## Retention
+Reports should be archived or cleaned up periodically to manage disk space.
+Consider keeping the most recent reports and archiving older ones.

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "bibiere - Timeless Luxury"
+version = "1.0.0"
+id = "artifacts/bibiere"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18654
+
+[services.development]
+run = "pnpm --filter @workspace/bibiere run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/bibiere", "run", "build" ]
+publicDir = "artifacts/bibiere/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18654"
+BASE_PATH = "/"

@@ -1,0 +1,179 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "clear": "Effacer",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "view_all": "Voir tout",
+    "show_more": "Voir plus",
+    "show_less": "Voir moins"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "collections": "Collections",
+    "new_arrivals": "Nouveautés",
+    "dresses": "Robes",
+    "lookbook": "Lookbook",
+    "journal": "Journal",
+    "about": "À propos",
+    "contact": "Contact",
+    "account": "Mon compte",
+    "wishlist": "Liste de souhaits",
+    "cart": "Panier",
+    "checkout": "Commande"
+  },
+  "header": {
+    "skip_to_content": "Aller au contenu principal",
+    "open_menu": "Ouvrir le menu",
+    "close_menu": "Fermer le menu",
+    "search_products": "Rechercher des produits",
+    "wishlist_items": "Liste de souhaits ({{count}} articles)",
+    "cart_items": "Panier ({{count}} articles)",
+    "my_account": "Mon compte"
+  },
+  "hero": {
+    "title": "Luxe intemporel redéfini",
+    "subtitle": "Découvrez la collection bibiere de pièces exquises conçues pour l'individu exigeant",
+    "cta_button": "Explorer la collection"
+  },
+  "products": {
+    "featured_collection": "Collection vedette",
+    "new_arrivals": "Nouveautés",
+    "best_sellers": "Meilleures ventes",
+    "on_sale": "En solde",
+    "add_to_cart": "Ajouter au panier",
+    "add_to_wishlist": "Ajouter à la liste de souhaits",
+    "remove_from_wishlist": "Retirer de la liste de souhaits",
+    "quick_view": "Aperçu rapide",
+    "size_guide": "Guide des tailles",
+    "product_details": "Détails du produit",
+    "care_instructions": "Instructions d'entretien",
+    "shipping_returns": "Livraison et retours",
+    "reviews": "Avis",
+    "write_review": "Écrire un avis",
+    "out_of_stock": "Rupture de stock",
+    "in_stock": "En stock",
+    "low_stock": "Plus que {{count}} en stock",
+    "select_size": "Sélectionner la taille",
+    "select_color": "Sélectionner la couleur",
+    "quantity": "Quantité",
+    "price": "Prix",
+    "sale_price": "Prix soldé",
+    "regular_price": "Prix régulier",
+    "you_save": "Vous économisez {{amount}}",
+    "free_shipping": "Livraison gratuite",
+    "rating": "Note: {{rating}} sur 5 étoiles",
+    "reviews_count": {
+      "one": "{{count}} avis",
+      "other": "{{count}} avis"
+    }
+  },
+  "search": {
+    "placeholder": "Rechercher des produits...",
+    "no_results": "Aucun produit trouvé",
+    "results_count": {
+      "one": "{{count}} produit trouvé",
+      "other": "{{count}} produits trouvés"
+    },
+    "popular_searches": "Recherches populaires",
+    "recent_searches": "Recherches récentes",
+    "clear_search": "Effacer la recherche",
+    "filters": "Filtres",
+    "sort_by": "Trier par",
+    "sort_options": {
+      "relevance": "Pertinence",
+      "price_low_high": "Prix: croissant",
+      "price_high_low": "Prix: décroissant",
+      "newest": "Plus récent",
+      "rating": "Mieux noté",
+      "name_a_z": "Nom: A à Z",
+      "name_z_a": "Nom: Z à A"
+    },
+    "filter_categories": {
+      "category": "Catégorie",
+      "price": "Gamme de prix",
+      "color": "Couleur",
+      "size": "Taille",
+      "material": "Matériau",
+      "brand": "Marque",
+      "rating": "Note"
+    }
+  },
+  "cart": {
+    "title": "Panier",
+    "empty_cart": "Votre panier est vide",
+    "continue_shopping": "Continuer les achats",
+    "item_added": "Article ajouté au panier",
+    "item_removed": "Article retiré du panier",
+    "update_quantity": "Mettre à jour la quantité",
+    "remove_item": "Retirer l'article",
+    "move_to_wishlist": "Déplacer vers la liste de souhaits",
+    "subtotal": "Sous-total",
+    "shipping": "Livraison",
+    "tax": "Taxe",
+    "total": "Total",
+    "proceed_to_checkout": "Procéder à la commande",
+    "free_shipping_threshold": "Ajoutez {{amount}} de plus pour la livraison gratuite",
+    "estimated_total": "Total estimé",
+    "promo_code": "Code promo",
+    "apply_code": "Appliquer le code",
+    "invalid_code": "Code promo invalide",
+    "code_applied": "Code promo appliqué avec succès"
+  },
+  "wishlist": {
+    "title": "Ma liste de souhaits",
+    "empty_wishlist": "Votre liste de souhaits est vide",
+    "item_added": "Article ajouté à la liste de souhaits",
+    "item_removed": "Article retiré de la liste de souhaits",
+    "add_to_cart": "Ajouter au panier",
+    "add_all_to_cart": "Tout ajouter au panier",
+    "remove_all": "Tout supprimer",
+    "share_wishlist": "Partager la liste de souhaits",
+    "items_count": {
+      "one": "{{count}} article dans votre liste de souhaits",
+      "other": "{{count}} articles dans votre liste de souhaits"
+    }
+  },
+  "pwa": {
+    "install_title": "Installer bibiere",
+    "install_description": "Obtenez l'expérience complète bibiere avec notre application",
+    "install_features": "Fonctionne hors ligne • Chargement plus rapide • Notifications push",
+    "install_button": "Installer l'app",
+    "not_now": "Pas maintenant",
+    "offline_title": "Vous êtes hors ligne",
+    "offline_message": "Il semble que vous ayez perdu votre connexion Internet. Ne vous inquiétez pas, vous pouvez toujours parcourir une partie de notre contenu sauvegardé pour la visualisation hors ligne."
+  },
+  "seo": {
+    "site_name": "bibiere",
+    "brand_name": "bibiere",
+    "tagline": "Luxe intemporel redéfini",
+    "default_title": "bibiere - Luxe intemporel redéfini",
+    "default_description": "Luxe intemporel redéfini. Découvrez la collection bibiere de pièces exquises conçues pour l'individu exigeant.",
+    "product_title_template": "{{productName}} - Mode premium | bibiere",
+    "collection_title_template": "Collection {{collectionName}} - Mode de luxe | bibiere",
+    "journal_title_template": "{{articleTitle}} | Journal bibiere",
+    "keywords": {
+      "primary": ["mode de luxe", "design intemporel", "qualité premium", "vêtements élégants", "style sophistiqué"],
+      "secondary": ["haute couture", "mode française", "luxe parisien", "élégance", "raffinement"],
+      "brand": ["bibiere", "bibiere paris", "maison bibiere", "créateur bibiere"]
+    },
+    "structured_data": {
+      "organization_name": "bibiere",
+      "organization_description": "Maison de mode de luxe spécialisée dans les créations intemporelles et raffinées",
+      "brand_description": "Marque de mode de luxe française proposant des pièces d'exception"
+    }
+  }
+}

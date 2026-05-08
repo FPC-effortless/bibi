@@ -1,0 +1,99 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Ha ocurrido un error",
+    "retry": "Intentar de nuevo",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "clear": "Limpiar",
+    "apply": "Aplicar",
+    "reset": "Restablecer",
+    "view_all": "Ver todo",
+    "show_more": "Mostrar más",
+    "show_less": "Mostrar menos"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "collections": "Colecciones",
+    "new_arrivals": "Novedades",
+    "dresses": "Vestidos",
+    "lookbook": "Lookbook",
+    "journal": "Revista",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "account": "Mi cuenta",
+    "wishlist": "Lista de deseos",
+    "cart": "Carrito",
+    "checkout": "Finalizar compra"
+  },
+  "hero": {
+    "title": "Lujo atemporal redefinido",
+    "subtitle": "Descubre la colección bibiere de piezas exquisitas diseñadas para el individuo exigente",
+    "cta_button": "Explorar colección"
+  },
+  "products": {
+    "featured_collection": "Colección destacada",
+    "new_arrivals": "Novedades",
+    "best_sellers": "Más vendidos",
+    "on_sale": "En oferta",
+    "add_to_cart": "Añadir al carrito",
+    "add_to_wishlist": "Añadir a lista de deseos",
+    "remove_from_wishlist": "Quitar de lista de deseos",
+    "quick_view": "Vista rápida",
+    "size_guide": "Guía de tallas",
+    "product_details": "Detalles del producto",
+    "care_instructions": "Instrucciones de cuidado",
+    "shipping_returns": "Envío y devoluciones",
+    "reviews": "Reseñas",
+    "write_review": "Escribir reseña",
+    "out_of_stock": "Agotado",
+    "in_stock": "En stock",
+    "low_stock": "Solo quedan {{count}}",
+    "select_size": "Seleccionar talla",
+    "select_color": "Seleccionar color",
+    "quantity": "Cantidad",
+    "price": "Precio",
+    "sale_price": "Precio de oferta",
+    "regular_price": "Precio regular",
+    "you_save": "Ahorras {{amount}}",
+    "free_shipping": "Envío gratis",
+    "rating": "Calificación: {{rating}} de 5 estrellas"
+  },
+  "footer": {
+    "newsletter_title": "Mantente conectado",
+    "newsletter_subtitle": "Suscríbete para recibir actualizaciones sobre nuevos productos y ofertas exclusivas",
+    "newsletter_placeholder": "Ingresa tu dirección de correo",
+    "newsletter_subscribe": "Suscribirse",
+    "newsletter_success": "¡Gracias por suscribirte!",
+    "copyright": "© {{year}} bibiere. Todos los derechos reservados."
+  },
+  "seo": {
+    "site_name": "bibiere",
+    "brand_name": "bibiere",
+    "tagline": "Lujo atemporal redefinido",
+    "default_title": "bibiere - Lujo atemporal redefinido",
+    "default_description": "Lujo atemporal redefinido. Descubre la colección bibiere de piezas exquisitas diseñadas para el individuo exigente.",
+    "product_title_template": "{{productName}} - Moda premium | bibiere",
+    "collection_title_template": "Colección {{collectionName}} - Moda de lujo | bibiere",
+    "journal_title_template": "{{articleTitle}} | Revista bibiere",
+    "keywords": {
+      "primary": ["moda de lujo", "diseño atemporal", "calidad premium", "ropa elegante", "estilo sofisticado"],
+      "secondary": ["alta costura", "moda española", "lujo madrileño", "elegancia", "refinamiento"],
+      "brand": ["bibiere", "bibiere madrid", "casa bibiere", "diseñador bibiere"]
+    },
+    "structured_data": {
+      "organization_name": "bibiere",
+      "organization_description": "Casa de moda de lujo especializada en creaciones atemporales y refinadas",
+      "brand_description": "Marca de moda de lujo española que ofrece piezas excepcionales"
+    }
+  }
+}

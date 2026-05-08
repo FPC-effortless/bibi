@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "jEJ4ZrUgYQHYekke52htg"
+uri = "file://artifacts/bibiere-mobile/assets/images/icon.png"
+type = "image"
+title = "bibiere luxury B monogram icon"
