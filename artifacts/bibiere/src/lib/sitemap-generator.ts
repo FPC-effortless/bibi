@@ -1,7 +1,16 @@
 // Comprehensive sitemap generation utility
 // This module provides utilities for generating dynamic sitemaps with proper SEO optimization
 
-import { MetadataRoute } from 'next'
+// Local type — this is a Vite project, not Next.js
+namespace MetadataRoute {
+  export type Sitemap = Array<{
+    url: string
+    lastModified?: string | Date
+    changeFrequency?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
+    priority?: number
+    alternates?: { languages?: Record<string, string> }
+  }>
+}
 
 // Base URL configuration
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://bibiere.com'

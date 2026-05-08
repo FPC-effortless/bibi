@@ -3,7 +3,8 @@
  * Handles SEO metadata, structured data, and branding across multiple languages
  */
 
-import { Metadata } from 'next'
+// Local type alias — this is a Vite project, not Next.js
+type Metadata = Record<string, unknown>
 import { Locale, SUPPORTED_LOCALES } from './i18n'
 import { SEOManager, SEOMetadata, ProductData, StructuredDataSchema } from './seo-manager'
 
