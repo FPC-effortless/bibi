@@ -44,10 +44,10 @@ export function useCommerce() {
     await updateCartMutation({ productId, quantity })
   }, [updateCartMutation])
 
-  const wishlistProductIds = useMemo(() => new Set(wishlist.map((item) => item.productId)), [wishlist])
+  const wishlistProductIds = useMemo(() => new Set(wishlist.map((item: any) => item.productId)), [wishlist])
 
   const totals = useMemo(() => {
-    const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+    const cartCount = cart.reduce((sum: number, item: any) => sum + item.quantity, 0)
     const wishlistCount = wishlist.length
     return { cartCount, wishlistCount }
   }, [cart, wishlist])

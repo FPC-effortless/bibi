@@ -78,7 +78,7 @@ export default function CheckoutPage() {
     country: "NG",
   });
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
   const total = subtotal;
 
   const handlePayment = async () => {
@@ -280,7 +280,7 @@ export default function CheckoutPage() {
                 <div className="border border-border rounded-xl p-6 space-y-4 h-fit sticky top-24">
                   <h3 className="font-serif font-semibold text-lg">Order Summary</h3>
                   <div className="space-y-3">
-                    {cart.map((item) => (
+                    {cart.map((item: any) => (
                       <div key={item._id ?? item.productId} className="flex gap-3 items-start">
                         <img
                           src={item.image}

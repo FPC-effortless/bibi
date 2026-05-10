@@ -129,7 +129,7 @@ export default function AccountPage() {
                     <div className="space-y-4">
                       <h2 className="text-xl font-serif font-semibold">Saved Items ({wishlist.length})</h2>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {wishlist.map((item) => (
+                        {wishlist.map((item: any) => (
                           <div key={item._id ?? item.productId} className="border border-border rounded-xl p-4 flex gap-4">
                             <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-muted" />
                             <div className="flex-1 min-w-0">

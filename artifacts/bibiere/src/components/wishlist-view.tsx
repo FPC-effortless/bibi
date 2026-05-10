@@ -16,7 +16,7 @@ export default function WishlistView() {
   const [processingItems, setProcessingItems] = useState<Set<string>>(new Set())
 
   const sortedItems = useMemo(() => {
-    const filtered = wishlist.filter((item) => {
+    const filtered = wishlist.filter((item: any) => {
       if (filterBy === "inStock") return item.inStock
       if (filterBy === "onSale") return Boolean(item.originalPrice && item.originalPrice > item.price)
       return true

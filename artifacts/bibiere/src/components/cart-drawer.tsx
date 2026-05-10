@@ -12,7 +12,7 @@ export function CartDrawer() {
   const { cart, wishlistProductIds, cartCount, updateCartQuantity, toggleWishlist } = useCommerce()
   const [processingProductId, setProcessingProductId] = useState<string | null>(null)
 
-  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart])
+  const subtotal = useMemo(() => cart.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0), [cart])
   const shipping = subtotal >= 100 ? 0 : (cart.length > 0 ? 25 : 0)
   const total = subtotal + shipping
 
@@ -77,7 +77,7 @@ export function CartDrawer() {
               </div>
             ) : (
               <div className="space-y-6">
-                {cart.map((item) => {
+                {cart.map((item: any) => {
                   const isUpdating = processingProductId === item.productId
                   return (
                     <div key={item._id} className={`flex space-x-4 ${isUpdating ? "opacity-60" : ""}`}>
