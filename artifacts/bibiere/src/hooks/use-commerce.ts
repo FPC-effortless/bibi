@@ -1,112 +1,66 @@
-
-import { useCallback, useEffect, useMemo, useState } from "react"
-import type { CartItem, Product, WishlistItem } from "@/lib/commerce-data"
-
-interface CommerceState {
-  products: Product[]
-  cart: CartItem[]
-  wishlist: WishlistItem[]
-  loading: boolean
-}
-
-const emptyState: CommerceState = {
-  products: [],
-  cart: [],
-  wishlist: [],
-  loading: true,
-}
+import { useCallback, useMemo, useEffect } from "react"
+import { useQuery, useMutation } from "convex/react"
+import { api } from "../../../../lib/convex/convex/_generated/api"
+import { useUser } from "@clerk/react"
 
 export function useCommerce() {
-  const [state, setState] = useState<CommerceState>(emptyState)
+  const { user, isLoaded } = useUser()
+  const storeUser = useMutation(api.users.store)
 
-  const refresh = useCallback(async () => {
-    try {
-      const response = await fetch("/api/commerce/bootstrap", { cache: "no-store" })
-      if (!response.ok) {
-        throw new Error("Failed to load commerce state")
-      }
-
-      const snapshot = (await response.json()) as Omit<CommerceState, "loading">
-      setState({ ...snapshot, loading: false })
-    } catch {
-      setState((prev) => ({ ...prev, loading: false }))
-    }
-  }, [])
-
+  // Sync user with Convex when logged in
   useEffect(() => {
-    void refresh()
-  }, [refresh])
-
-  const toggleWishlist = useCallback(async (productId: string, isWishlisted: boolean) => {
-    try {
-      const response = await fetch("/api/commerce/wishlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, action: isWishlisted ? "remove" : "add" }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update wishlist")
-      }
-
-      const payload = (await response.json()) as { items: WishlistItem[] }
-      setState((prev) => ({ ...prev, wishlist: payload.items }))
-    } catch {
-      // no-op: keep previous client state
+    if (isLoaded && user) {
+      void storeUser()
     }
-  }, [])
+  }, [isLoaded, user, storeUser])
+
+  // Convex Queries (Reactive!)
+  const products = useQuery(api.products.list) ?? []
+  const cart = useQuery(api.cart.get) ?? []
+  const wishlist = useQuery(api.wishlist.get) ?? []
+  
+  // Seed products if none exist (Convenience for first run)
+  const seedProducts = useMutation(api.products.seed)
+  useEffect(() => {
+    if (products.length === 0 && isLoaded) {
+      void seedProducts()
+    }
+  }, [products, seedProducts, isLoaded])
+
+  // Convex Mutations
+  const addCartMutation = useMutation(api.cart.add)
+  const updateCartMutation = useMutation(api.cart.update)
+  const toggleWishlistMutation = useMutation(api.wishlist.toggle)
+
+  const toggleWishlist = useCallback(async (productId: string) => {
+    await toggleWishlistMutation({ productId })
+  }, [toggleWishlistMutation])
 
   const addProductToCart = useCallback(async (productId: string) => {
-    try {
-      const response = await fetch("/api/commerce/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to add to cart")
-      }
-
-      const payload = (await response.json()) as { items: CartItem[] }
-      setState((prev) => ({ ...prev, cart: payload.items }))
-    } catch {
-      // no-op: keep previous client state
-    }
-  }, [])
+    await addCartMutation({ productId })
+  }, [addCartMutation])
 
   const updateCartQuantity = useCallback(async (productId: string, quantity: number) => {
-    try {
-      const response = await fetch("/api/commerce/cart", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, quantity }),
-      })
+    await updateCartMutation({ productId, quantity })
+  }, [updateCartMutation])
 
-      if (!response.ok) {
-        throw new Error("Failed to update cart")
-      }
-
-      const payload = (await response.json()) as { items: CartItem[] }
-      setState((prev) => ({ ...prev, cart: payload.items }))
-    } catch {
-      // no-op: keep previous client state
-    }
-  }, [])
-
-  const wishlistProductIds = useMemo(() => new Set(state.wishlist.map((item) => item.productId)), [state.wishlist])
+  const wishlistProductIds = useMemo(() => new Set(wishlist.map((item) => item.productId)), [wishlist])
 
   const totals = useMemo(() => {
-    const cartCount = state.cart.reduce((sum, item) => sum + item.quantity, 0)
-    const wishlistCount = state.wishlist.length
+    const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+    const wishlistCount = wishlist.length
     return { cartCount, wishlistCount }
-  }, [state.cart, state.wishlist])
+  }, [cart, wishlist])
+
+  const loading = products.length === 0 // Simple loading state
 
   return {
-    ...state,
+    products,
+    cart,
+    wishlist,
+    loading,
     ...totals,
     wishlistProductIds,
-    refresh,
     toggleWishlist,
     addProductToCart,
     updateCartQuantity,

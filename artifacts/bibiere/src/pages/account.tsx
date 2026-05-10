@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Package, Heart, Settings, LogOut } from "lucide-react";
 import { useUser, useClerk, Show } from "@clerk/react";
 import { useCommerce } from "@/components/commerce-provider";
+import { useQuery } from "convex/react";
+import { api } from "../../../../lib/convex/convex/_generated/api";
 
 const statusColors: Record<string, string> = {
   paid: "bg-green-100 text-green-800",
@@ -17,20 +19,11 @@ const statusColors: Record<string, string> = {
 
 export default function AccountPage() {
   const [tab, setTab] = useState("orders");
-  const [orders, setOrders] = useState<any[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
+  const { wishlist } = useCommerce();
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
-  const { wishlist } = useCommerce();
-
-  useEffect(() => {
-    if (!user) return;
-    fetch("/api/commerce/orders")
-      .then((r) => r.json())
-      .then((data) => setOrders(data.orders ?? []))
-      .catch(() => {})
-      .finally(() => setOrdersLoading(false));
-  }, [user]);
+  const orders = useQuery(api.orders.list) ?? [];
+  const ordersLoading = orders === undefined;
 
   if (!isLoaded) {
     return (

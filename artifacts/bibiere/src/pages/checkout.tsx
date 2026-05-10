@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, CreditCard, MapPin, Package, Lock, ShoppingBag } from "lucide-react";
 import { useUser, Show } from "@clerk/react";
 import { useCommerce } from "@/components/commerce-provider";
+import { useAction } from "convex/react";
+import { api } from "../../../../lib/convex/convex/_generated/api";
 
 type Step = 1 | 2;
 
@@ -62,6 +64,7 @@ export default function CheckoutPage() {
   const [, navigate] = useLocation();
   const { user, isLoaded } = useUser();
   const { cart } = useCommerce();
+  const initializePayment = useAction(api.payments.initializePayment);
 
   const [shipping, setShipping] = useState({
     firstName: user?.firstName ?? "",
@@ -82,23 +85,15 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/payments/initialize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: shipping.email,
-          amount: total,
-          currency: "NGN",
-          metadata: {
-            shipping: `${shipping.address}, ${shipping.city}, ${shipping.state} ${shipping.zip}, ${shipping.country}`,
-            customerName: `${shipping.firstName} ${shipping.lastName}`,
-          },
-        }),
+      const data = await initializePayment({
+        email: shipping.email,
+        currency: "NGN",
+        metadata: {
+          shipping: `${shipping.address}, ${shipping.city}, ${shipping.state} ${shipping.zip}, ${shipping.country}`,
+          customerName: `${shipping.firstName} ${shipping.lastName}`,
+        },
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error ?? "Payment initialization failed");
-      }
+      
       if (data.data?.authorization_url) {
         window.location.href = data.data.authorization_url;
       } else {
