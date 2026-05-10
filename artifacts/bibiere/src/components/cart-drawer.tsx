@@ -6,13 +6,14 @@ import { ShoppingBag, Plus, Minus, Loader2, Heart, Trash2 } from "lucide-react"
 import { Link } from 'wouter'
 import { useToast } from "@/hooks/use-toast"
 import { useCommerce } from "@/components/commerce-provider"
+import { CartItem } from "@/types"
 
 export function CartDrawer() {
   const { toast } = useToast()
   const { cart, wishlistProductIds, cartCount, updateCartQuantity, toggleWishlist } = useCommerce()
   const [processingProductId, setProcessingProductId] = useState<string | null>(null)
 
-  const subtotal = useMemo(() => cart.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0), [cart])
+  const subtotal = useMemo(() => cart.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0), [cart])
   const shipping = subtotal >= 100 ? 0 : (cart.length > 0 ? 25 : 0)
   const total = subtotal + shipping
 
@@ -77,7 +78,7 @@ export function CartDrawer() {
               </div>
             ) : (
               <div className="space-y-6">
-                {cart.map((item: any) => {
+                {cart.map((item: CartItem) => {
                   const isUpdating = processingProductId === item.productId
                   return (
                     <div key={item._id} className={`flex space-x-4 ${isUpdating ? "opacity-60" : ""}`}>

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useEffect } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../../lib/convex/convex/_generated/api"
 import { useUser } from "@clerk/react"
+import { CartItem, WishlistItem } from "../types"
 
 export function useCommerce() {
   const { user, isLoaded } = useUser()
@@ -44,10 +45,10 @@ export function useCommerce() {
     await updateCartMutation({ productId, quantity })
   }, [updateCartMutation])
 
-  const wishlistProductIds = useMemo(() => new Set(wishlist.map((item: any) => item.productId)), [wishlist])
+  const wishlistProductIds = useMemo(() => new Set(wishlist.map((item: WishlistItem) => item.productId)), [wishlist])
 
   const totals = useMemo(() => {
-    const cartCount = cart.reduce((sum: number, item: any) => sum + item.quantity, 0)
+    const cartCount = cart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0)
     const wishlistCount = wishlist.length
     return { cartCount, wishlistCount }
   }, [cart, wishlist])

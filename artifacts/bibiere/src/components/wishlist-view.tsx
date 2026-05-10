@@ -6,6 +6,7 @@ import { X, Heart, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Link } from 'wouter'
 import { useCommerce } from "@/components/commerce-provider"
+import { WishlistItem } from "@/types"
 
 export default function WishlistView() {
   const { toast } = useToast()
@@ -16,7 +17,7 @@ export default function WishlistView() {
   const [processingItems, setProcessingItems] = useState<Set<string>>(new Set())
 
   const sortedItems = useMemo(() => {
-    const filtered = wishlist.filter((item: any) => {
+    const filtered = wishlist.filter((item: WishlistItem) => {
       if (filterBy === "inStock") return item.inStock
       if (filterBy === "onSale") return Boolean(item.originalPrice && item.originalPrice > item.price)
       return true

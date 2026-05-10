@@ -22,7 +22,9 @@ export default defineSchema({
     inStock: v.boolean(),
     brand: v.string(),
     description: v.optional(v.string()),
-  }).index("by_category", ["category"]),
+  })
+    .index("by_category", ["category"])
+    .index("by_product_id", ["id"]),
 
   cartItems: defineTable({
     userId: v.id("users"),

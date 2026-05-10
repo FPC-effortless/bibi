@@ -18,7 +18,7 @@ export const get = query({
       items.map(async (item) => {
         const product = await ctx.db
           .query("products")
-          .filter((q) => q.eq(q.field("id"), item.productId))
+          .withIndex("by_product_id", (q) => q.eq("id", item.productId))
           .unique();
         return {
           ...item,

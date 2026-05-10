@@ -8,6 +8,7 @@ import { useUser, useClerk, Show } from "@clerk/react";
 import { useCommerce } from "@/components/commerce-provider";
 import { useQuery } from "convex/react";
 import { api } from "../../../../lib/convex/convex/_generated/api";
+import { Order, WishlistItem } from "@/types";
 
 const statusColors: Record<string, string> = {
   paid: "bg-green-100 text-green-800",
@@ -92,13 +93,13 @@ export default function AccountPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {orders.map((order: any) => (
+                      {orders.map((order: Order) => (
                         <div key={order._id} className="border border-border rounded-xl p-6">
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="font-semibold font-mono text-sm">{order._id.slice(0, 8).toUpperCase()}</p>
                               <p className="text-sm text-muted-foreground">
-                                {new Date(order.createdAt).toLocaleDateString("en-US", {
+                                {new Date(order._creationTime).toLocaleDateString("en-US", {
                                   year: "numeric", month: "long", day: "numeric",
                                 })}
                               </p>
@@ -129,7 +130,7 @@ export default function AccountPage() {
                     <div className="space-y-4">
                       <h2 className="text-xl font-serif font-semibold">Saved Items ({wishlist.length})</h2>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {wishlist.map((item: any) => (
+                        {wishlist.map((item: WishlistItem) => (
                           <div key={item._id ?? item.productId} className="border border-border rounded-xl p-4 flex gap-4">
                             <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-muted" />
                             <div className="flex-1 min-w-0">

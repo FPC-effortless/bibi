@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "convex dev",
     "deploy": "convex deploy",
-    "codegen": "convex codegen",
-    "postinstall": "convex codegen"
+    "codegen": "convex codegen"
   },
   "dependencies": {
     "convex": "^1.19.2",

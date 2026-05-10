@@ -5,6 +5,7 @@ import { ProductGridSkeleton } from "./loading-spinner"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useCommerce } from "@/components/commerce-provider"
+import { Product } from "@/types"
 
 interface ProductGridProps {
   title?: string
@@ -24,7 +25,7 @@ export default function ProductGrid({
   const { products, loading, wishlistProductIds, toggleWishlist, addProductToCart } = useCommerce()
 
   const displayProducts = useMemo(
-    () => products.filter((product: any) => !showFeaturedOnly || product.featured).slice(0, maxItems),
+    () => products.filter((product: Product) => !showFeaturedOnly || product.featured).slice(0, maxItems),
     [products, showFeaturedOnly, maxItems],
   )
 
@@ -35,7 +36,7 @@ export default function ProductGrid({
   }
 
   const handleAddToCart = async (productId: string) => {
-    const product = products.find((p: any) => p.id === productId)
+    const product = products.find((p: Product) => p.id === productId)
     if (!product) {
       return
     }
@@ -61,7 +62,7 @@ export default function ProductGrid({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 lg:gap-10">
-        {displayProducts.map((product: any, index: number) => (
+        {displayProducts.map((product: Product, index: number) => (
           <div
             key={product.id}
             className="animate-fade-in-up"

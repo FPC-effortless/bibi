@@ -13,7 +13,7 @@ export const get = query({
   handler: async (ctx, args) => {
     return await ctx.db
       .query("products")
-      .filter((q) => q.eq(q.field("id"), args.id))
+      .withIndex("by_product_id", (q) => q.eq("id", args.id))
       .unique();
   },
 });
