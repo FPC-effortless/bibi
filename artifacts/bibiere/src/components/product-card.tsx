@@ -10,7 +10,7 @@ interface ProductCardProps {
   name: string
   price: string
   primaryImage: string
-  hoverImage: string
+  hoverImage?: string
   isWishlisted?: boolean
   onWishlistToggle?: (id: string) => void
   onAddToCart?: (id: string) => void
@@ -22,7 +22,7 @@ export default function ProductCard({
   name,
   price,
   primaryImage,
-  hoverImage,
+  hoverImage = "",
   isWishlisted = false,
   onWishlistToggle,
   onAddToCart,

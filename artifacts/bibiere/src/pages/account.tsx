@@ -22,7 +22,7 @@ export default function AccountPage() {
   const { wishlist } = useCommerce();
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
-  const orders = useQuery(api.orders.list) ?? [];
+  const orders = useQuery(api.payments.list) ?? [];
   const ordersLoading = orders === undefined;
 
   if (!isLoaded) {
@@ -92,11 +92,11 @@ export default function AccountPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {orders.map((order) => (
-                        <div key={order.id} className="border border-border rounded-xl p-6">
+                      {orders.map((order: any) => (
+                        <div key={order._id} className="border border-border rounded-xl p-6">
                           <div className="flex justify-between items-start">
                             <div>
-                              <p className="font-semibold font-mono text-sm">{order.id.slice(0, 8).toUpperCase()}</p>
+                              <p className="font-semibold font-mono text-sm">{order._id.slice(0, 8).toUpperCase()}</p>
                               <p className="text-sm text-muted-foreground">
                                 {new Date(order.createdAt).toLocaleDateString("en-US", {
                                   year: "numeric", month: "long", day: "numeric",
@@ -130,7 +130,7 @@ export default function AccountPage() {
                       <h2 className="text-xl font-serif font-semibold">Saved Items ({wishlist.length})</h2>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {wishlist.map((item) => (
-                          <div key={item.id} className="border border-border rounded-xl p-4 flex gap-4">
+                          <div key={item._id ?? item.productId} className="border border-border rounded-xl p-4 flex gap-4">
                             <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-muted" />
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate">{item.name}</p>

@@ -8,7 +8,7 @@ packages:
   - artifacts/bibiere
   - artifacts/bibiere-mobile
   - artifacts/mockup-sandbox
-  - lib/convex
+  - lib/*
   - scripts
 
 catalog:

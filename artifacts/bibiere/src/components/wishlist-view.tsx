@@ -37,7 +37,7 @@ export default function WishlistView() {
 
   const removeFromWishlist = async (productId: string, name: string) => {
     setProcessingItems((prev) => new Set(prev).add(productId))
-    await toggleWishlist(productId, true)
+    await toggleWishlist(productId)
     setProcessingItems((prev) => {
       const clone = new Set(prev)
       clone.delete(productId)
@@ -58,7 +58,7 @@ export default function WishlistView() {
     setProcessingItems((prev) => new Set(prev).add(productId))
     await addProductToCart(productId)
     if (removeAfter) {
-      await toggleWishlist(productId, true)
+      await toggleWishlist(productId)
     }
     setProcessingItems((prev) => {
       const clone = new Set(prev)
@@ -127,7 +127,7 @@ export default function WishlistView() {
             const isSelected = selectedItems.has(item.productId)
 
             return (
-              <Card key={item.id} className="group overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <Card key={item._id} className="group overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 <div className="relative">
                   <img src={item.image} alt={item.name} className="w-full aspect-[4/5] object-cover" />
                   <input
@@ -162,7 +162,6 @@ export default function WishlistView() {
                   <div className="mb-2">
                     {item.brand && <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{item.brand}</p>}
                     <h3 className="font-sans font-semibold text-card-foreground line-clamp-2">{item.name}</h3>
-                    {(item.color || item.size) && <p className="text-sm text-muted-foreground mt-1">{[item.color, item.size].filter(Boolean).join(" • ")}</p>}
                   </div>
 
                   <div className="mb-4">

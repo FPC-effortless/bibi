@@ -12,9 +12,7 @@ export function CartDrawer() {
   const { cart, wishlistProductIds, cartCount, updateCartQuantity, toggleWishlist } = useCommerce()
   const [processingProductId, setProcessingProductId] = useState<string | null>(null)
 
-  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + (item.discountPrice || item.price) * item.quantity, 0), [cart])
-  const originalSubtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart])
-  const totalSavings = originalSubtotal - subtotal
+  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart])
   const shipping = subtotal >= 100 ? 0 : (cart.length > 0 ? 25 : 0)
   const total = subtotal + shipping
 
@@ -28,7 +26,7 @@ export function CartDrawer() {
     setProcessingProductId(productId)
 
     if (!wishlistProductIds.has(productId)) {
-      await toggleWishlist(productId, false)
+      await toggleWishlist(productId)
     }
 
     await updateCartQuantity(productId, 0)
@@ -82,7 +80,7 @@ export function CartDrawer() {
                 {cart.map((item) => {
                   const isUpdating = processingProductId === item.productId
                   return (
-                    <div key={item.id} className={`flex space-x-4 ${isUpdating ? "opacity-60" : ""}`}>
+                    <div key={item._id} className={`flex space-x-4 ${isUpdating ? "opacity-60" : ""}`}>
                       <div className="relative w-20 h-20 rounded-md overflow-hidden">
                         <img src={item.image || "/placeholder.svg"} alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
                       </div>
@@ -90,8 +88,7 @@ export function CartDrawer() {
                         <h3 className="font-medium line-clamp-2">{item.name}</h3>
                         <p className="text-sm text-muted-foreground">{item.color} {item.size ? `• Size ${item.size}` : ""}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <p className="font-medium">${(item.discountPrice || item.price).toLocaleString()}</p>
-                          {item.discountPrice && <p className="text-sm text-muted-foreground line-through">${item.price.toLocaleString()}</p>}
+                          <p className="font-medium">${item.price.toLocaleString()}</p>
                         </div>
 
                         <div className="flex items-center space-x-2 mt-3">
@@ -99,7 +96,7 @@ export function CartDrawer() {
                             {isUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Minus className="h-3 w-3" />}
                           </Button>
                           <span className="w-12 text-center font-medium">{item.quantity}</span>
-                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item.productId, item.quantity + 1)} disabled={isUpdating || Boolean(item.maxQuantity && item.quantity >= item.maxQuantity)} className="h-8 w-8 p-0">
+                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item.productId, item.quantity + 1)} disabled={isUpdating} className="h-8 w-8 p-0">
                             {isUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
                           </Button>
                         </div>
@@ -128,12 +125,6 @@ export function CartDrawer() {
                   <span>Subtotal ({cartCount} items)</span>
                   <span>${subtotal.toLocaleString()}</span>
                 </div>
-                {totalSavings > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Total Savings</span>
-                    <span>-${totalSavings.toLocaleString()}</span>
-                  </div>
-                )}
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
                   <span className={shipping === 0 ? "text-green-600" : ""}>{shipping === 0 ? "Free" : `$${shipping}`}</span>

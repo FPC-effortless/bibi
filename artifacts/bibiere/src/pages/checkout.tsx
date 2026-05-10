@@ -281,7 +281,7 @@ export default function CheckoutPage() {
                   <h3 className="font-serif font-semibold text-lg">Order Summary</h3>
                   <div className="space-y-3">
                     {cart.map((item) => (
-                      <div key={item.id} className="flex gap-3 items-start">
+                      <div key={item._id ?? item.productId} className="flex gap-3 items-start">
                         <img
                           src={item.image}
                           alt={item.name}

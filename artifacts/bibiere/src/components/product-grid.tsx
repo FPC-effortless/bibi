@@ -30,7 +30,7 @@ export default function ProductGrid({
 
   const handleWishlistToggle = async (productId: string) => {
     const isWishlisted = wishlistProductIds.has(productId)
-    await toggleWishlist(productId, isWishlisted)
+    await toggleWishlist(productId)
     toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist")
   }
 
@@ -75,7 +75,7 @@ export default function ProductGrid({
               name={product.name}
               price={`$${product.price}`}
               primaryImage={product.primaryImage}
-              hoverImage={product.hoverImage}
+              hoverImage={product.hoverImage || ""}
               isWishlisted={wishlistProductIds.has(product.id)}
               onWishlistToggle={handleWishlistToggle}
               onAddToCart={handleAddToCart}
