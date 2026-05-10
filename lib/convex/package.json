@@ -1,0 +1,16 @@
+{
+  "name": "@workspace/convex",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "convex dev",
+    "deploy": "convex deploy",
+    "codegen": "convex codegen",
+    "postinstall": "convex codegen"
+  },
+  "dependencies": {
+    "convex": "^1.19.2",
+    "@clerk/clerk-sdk-node": "^5.1.6"
+  }
+}

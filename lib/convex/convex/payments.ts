@@ -1,0 +1,184 @@
+import { mutation, query, action, internalMutation, internalQuery } from "./_generated/server";
+import { v } from "convex/values";
+import { getCurrentUser } from "./users";
+import { internal } from "./_generated/api";
+
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+    return await ctx.db
+      .query("orders")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .collect();
+  },
+});
+
+export const getItems = query({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("orderItems")
+      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
+      .collect();
+  },
+});
+
+export const initializePayment = action({
+  args: {
+    email: v.string(),
+    currency: v.optional(v.string()),
+    metadata: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) throw new Error("Not authenticated");
+
+    // 1. Get cart items via internal query
+    const cartItems = await ctx.runQuery(internal.payments.getCartInternal, {});
+    if (cartItems.length === 0) throw new Error("Cart is empty");
+
+    const totalAmount = (cartItems as any[]).reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+    const amountInKobo = Math.round(totalAmount * 100);
+
+    // 2. Create pending order via internal mutation
+    const orderId: string = (await ctx.runMutation(internal.payments.createOrderInternal, {
+      totalAmount,
+      currency: args.currency ?? "NGN",
+      items: (cartItems as any[]).map((item: any) => ({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+      })),
+    })) as string;
+
+    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+
+    if (!PAYSTACK_SECRET_KEY) {
+      return {
+        status: true,
+        message: "Mock payment initialized",
+        data: {
+          authorization_url: `/checkout?order=${orderId}&mock=true`,
+          reference: orderId,
+        },
+        orderId,
+      };
+    }
+
+    const response = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: args.email,
+        amount: amountInKobo,
+        currency: args.currency ?? "NGN",
+        reference: orderId,
+        metadata: { orderId, ...args.metadata },
+      }),
+    });
+
+    const data = await response.json();
+    if (data.status) {
+      await ctx.runMutation(internal.payments.updateOrderReferenceInternal, {
+        orderId: orderId as any,
+        reference: data.data.reference,
+      });
+    }
+
+    return { ...data, orderId };
+  },
+});
+
+export const verifyPayment = action({
+  args: { reference: v.string() },
+  handler: async (ctx, args) => {
+    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+
+    if (!PAYSTACK_SECRET_KEY) {
+      // Mock verification
+      await ctx.runMutation(internal.payments.fulfillOrderInternal, { reference: args.reference });
+      return { status: true, message: "Payment verified (mock)", paid: true };
+    }
+
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${args.reference}`, {
+      headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
+    });
+
+    const data = await response.json();
+    if (data.status && data.data?.status === "success") {
+      await ctx.runMutation(internal.payments.fulfillOrderInternal, { reference: args.reference });
+    }
+
+    return { ...data, paid: data.data?.status === "success" };
+  },
+});
+
+// Internal helpers
+export const getCartInternal = internalQuery({
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+    const items = await ctx.db.query("cartItems").withIndex("by_user", (q) => q.eq("userId", user._id)).collect();
+    return await Promise.all(items.map(async item => {
+        const product = await ctx.db.query("products").filter(q => q.eq(q.field("id"), item.productId)).unique();
+        return { ...item, name: product?.name ?? "", price: product?.price ?? 0, image: product?.primaryImage ?? "" };
+    }));
+  }
+});
+
+export const createOrderInternal = internalMutation({
+  args: {
+    totalAmount: v.number(),
+    currency: v.string(),
+    items: v.array(v.object({
+        productId: v.string(),
+        name: v.string(),
+        price: v.number(),
+        quantity: v.number(),
+        image: v.optional(v.string()),
+    })),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+    const orderId = await ctx.db.insert("orders", {
+      userId: user._id,
+      status: "pending",
+      totalAmount: args.totalAmount,
+      currency: args.currency,
+    });
+    for (const item of args.items) {
+      await ctx.db.insert("orderItems", { ...item, orderId });
+    }
+    return orderId;
+  },
+});
+
+export const updateOrderReferenceInternal = internalMutation({
+  args: { orderId: v.id("orders"), reference: v.string() },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.orderId, { paystackReference: args.reference });
+  }
+});
+
+export const fulfillOrderInternal = internalMutation({
+  args: { reference: v.string() },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.query("orders").filter(q => q.or(
+        q.eq(q.field("_id"), args.reference),
+        q.eq(q.field("paystackReference"), args.reference)
+    )).unique();
+    if (!order) return;
+    await ctx.db.patch(order._id, { status: "paid", paystackStatus: "success" });
+    const items = await ctx.db.query("cartItems").withIndex("by_user", (q) => q.eq("userId", order.userId)).collect();
+    for (const item of items) await ctx.db.delete(item._id);
+  }
+});
