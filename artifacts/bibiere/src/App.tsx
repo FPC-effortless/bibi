@@ -13,8 +13,15 @@ import { CommerceProvider } from "@/components/commerce-provider";
 import CookieConsentBanner from "@/components/cookie-consent-banner";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexReactClient } from "convex/react";
+import {
+  clerkProxyUrl,
+  clerkPublishableKey,
+  convexUrl,
+  hasClerkConfig,
+  hasConvexConfig,
+} from "@/lib/runtime-config";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const convex = hasConvexConfig ? new ConvexReactClient(convexUrl) : null;
 
 import HomePage from "@/pages/home";
 import CollectionsPage from "@/pages/collections";
@@ -35,14 +42,32 @@ const queryClient = new QueryClient();
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
-
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
-
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
     ? path.slice(basePath.length) || "/"
     : path;
+}
+
+function MissingConfigurationPage() {
+  return (
+    <main className="min-h-screen bg-background px-6 py-16 text-foreground">
+      <div className="mx-auto max-w-2xl rounded-xl border border-border bg-card p-8 shadow-sm">
+        <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-bibiere-burgundy">
+          Deployment configuration
+        </p>
+        <h1 className="mb-4 font-serif text-3xl font-semibold">
+          bibiere needs one Vercel environment variable
+        </h1>
+        <p className="mb-6 text-muted-foreground">
+          Add <code className="rounded bg-muted px-1.5 py-0.5">VITE_CLERK_PUBLISHABLE_KEY</code> to the Vercel project and redeploy. The app now falls back to a static catalog when Convex is not configured, but Clerk still needs its public browser key before auth-aware pages can render.
+        </p>
+        <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
+          Optional backend variable:{" "}
+          <code className="text-foreground">VITE_CONVEX_URL</code>
+        </div>
+      </div>
+    </main>
+  );
 }
 
 const clerkAppearance = {
@@ -164,8 +189,8 @@ function ClerkProviderWithRoutes() {
 
   return (
     <ClerkProvider
-      publishableKey={clerkPubKey!}
-      proxyUrl={clerkProxyUrl}
+      publishableKey={clerkPublishableKey}
+      proxyUrl={clerkProxyUrl || undefined}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
@@ -178,20 +203,32 @@ function ClerkProviderWithRoutes() {
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
     >
       <QueryClientProvider client={queryClient}>
-        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <ClerkQueryClientCacheInvalidator />
+        {convex ? (
+          <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+            <ClerkQueryClientCacheInvalidator />
+            <TooltipProvider>
+              <AppRoutes />
+              <Toaster />
+              <Sonner />
+            </TooltipProvider>
+          </ConvexProviderWithClerk>
+        ) : (
           <TooltipProvider>
             <AppRoutes />
             <Toaster />
             <Sonner />
           </TooltipProvider>
-        </ConvexProviderWithClerk>
+        )}
       </QueryClientProvider>
     </ClerkProvider>
   );
 }
 
 function App() {
+  if (!hasClerkConfig) {
+    return <MissingConfigurationPage />;
+  }
+
   return (
     <WouterRouter base={basePath}>
       <ClerkProviderWithRoutes />
