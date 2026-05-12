@@ -7,6 +7,7 @@ const { pipeline } = require("stream/promises");
 let metroProcess = null;
 
 const projectRoot = path.resolve(__dirname, "..");
+const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
 function findWorkspaceRoot(startDir) {
   let dir = startDir;
@@ -67,8 +68,20 @@ function getDeploymentDomain() {
     return stripProtocol(process.env.EXPO_PUBLIC_DOMAIN);
   }
 
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return stripProtocol(process.env.VERCEL_PROJECT_PRODUCTION_URL);
+  }
+
+  if (process.env.VERCEL_BRANCH_URL) {
+    return stripProtocol(process.env.VERCEL_BRANCH_URL);
+  }
+
+  if (process.env.VERCEL_URL) {
+    return stripProtocol(process.env.VERCEL_URL);
+  }
+
   console.error(
-    "ERROR: No deployment domain found. Set REPLIT_INTERNAL_APP_DOMAIN, REPLIT_DEV_DOMAIN, or EXPO_PUBLIC_DOMAIN",
+    "ERROR: No deployment domain found. Set REPLIT_INTERNAL_APP_DOMAIN, REPLIT_DEV_DOMAIN, EXPO_PUBLIC_DOMAIN, or a Vercel deployment URL env var",
   );
   process.exit(1);
 }
@@ -139,15 +152,17 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
   const env = {
     ...process.env,
     EXPO_PUBLIC_DOMAIN: expoPublicDomain,
-    EXPO_PUBLIC_REPL_ID: expoPublicReplId,
+    EXPO_NO_DEPENDENCY_VALIDATION: "1",
+    EXPO_NO_TELEMETRY: "1",
   };
 
   if (expoPublicReplId) {
+    env.EXPO_PUBLIC_REPL_ID = expoPublicReplId;
     console.log(`Setting EXPO_PUBLIC_REPL_ID=${expoPublicReplId}`);
   }
 
   metroProcess = spawn(
-    "pnpm",
+    pnpmCommand,
     [
       "exec",
       "expo",
@@ -161,6 +176,7 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
       detached: false,
       cwd: projectRoot,
       env,
+      shell: process.platform === "win32",
     },
   );
 
