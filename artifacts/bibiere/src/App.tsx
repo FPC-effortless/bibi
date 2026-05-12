@@ -36,6 +36,18 @@ import AccountPage from "@/pages/account";
 import SearchPage from "@/pages/search";
 import FAQPage from "@/pages/faq";
 import ContactPage from "@/pages/contact";
+import AdminPage from "@/pages/admin";
+import {
+  CareersPage,
+  HeritagePage,
+  PressPage,
+  PrivacyPage,
+  ReturnsPage,
+  SizeGuidePage,
+  SustainabilityPage,
+  TermsPage,
+  TrackOrderPage,
+} from "@/pages/customer-info";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -175,6 +187,16 @@ function AppRoutes() {
           <Route path="/search" component={SearchPage} />
           <Route path="/faq" component={FAQPage} />
           <Route path="/contact" component={ContactPage} />
+          <Route path="/returns" component={ReturnsPage} />
+          <Route path="/track-order" component={TrackOrderPage} />
+          <Route path="/size-guide" component={SizeGuidePage} />
+          <Route path="/privacy" component={PrivacyPage} />
+          <Route path="/terms" component={TermsPage} />
+          <Route path="/heritage" component={HeritagePage} />
+          <Route path="/sustainability" component={SustainabilityPage} />
+          <Route path="/careers" component={CareersPage} />
+          <Route path="/press" component={PressPage} />
+          <Route path="/admin" component={AdminPage} />
           <Route component={NotFound} />
         </Switch>
         <Footer />

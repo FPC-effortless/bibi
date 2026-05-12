@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Instagram, Facebook } from "lucide-react"
 import { BrandLogo } from "./brand-logo"
+import { Link } from "wouter"
 
 // Pinterest icon component since it's not in lucide-react
 const PinterestIcon = () => (
@@ -44,18 +45,18 @@ export default function Footer() {
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-sidebar-accent">Shop</h4>
                 <nav className="space-y-2">
-                  <a href="/collections/new-arrivals" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  <Link href="/collections/new-arrivals" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     New Arrivals
-                  </a>
-                  <a href="/collections/dresses" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/collections/dresses" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Dresses
-                  </a>
-                  <a href="/collections" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/collections" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     All Collections
-                  </a>
-                  <a href="/search" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/search" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Search
-                  </a>
+                  </Link>
                 </nav>
               </div>
 
@@ -63,18 +64,18 @@ export default function Footer() {
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-sidebar-accent">Customer Care</h4>
                 <nav className="space-y-2">
-                  <a href="/faq" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  <Link href="/faq" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     FAQ
-                  </a>
-                  <a href="/returns" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/returns" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Returns & Exchanges
-                  </a>
-                  <a href="/track-order" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/track-order" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Track Your Order
-                  </a>
-                  <a href="/size-guide" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/size-guide" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Size Guide
-                  </a>
+                  </Link>
                 </nav>
               </div>
 
@@ -82,21 +83,21 @@ export default function Footer() {
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-sidebar-accent">Company</h4>
                 <nav className="space-y-2">
-                  <a href="/about" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  <Link href="/about" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     About bibiere
-                  </a>
-                  <a href="/heritage" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/heritage" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Our Heritage
-                  </a>
-                  <a href="/sustainability" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/sustainability" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Sustainability
-                  </a>
-                  <a href="/careers" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/careers" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Careers
-                  </a>
-                  <a href="/press" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
+                  </Link>
+                  <Link href="/press" className="block text-sidebar-foreground hover:text-sidebar-accent transition-colors duration-200 text-sm">
                     Press
-                  </a>
+                  </Link>
                 </nav>
               </div>
             </div>
@@ -135,7 +136,12 @@ export default function Footer() {
         <div className="border-t border-sidebar-border mt-8 pt-6 flex flex-col items-center gap-4">
           <BrandLogo variant="footer" />
           <p className="text-sm text-sidebar-foreground/60 text-center">
-            © 2024 bibiere. All rights reserved. | Timeless elegance, crafted with passion.
+            <Link href="/privacy" className="hover:text-sidebar-accent">Privacy</Link>
+            {" · "}
+            <Link href="/terms" className="hover:text-sidebar-accent">Terms</Link>
+          </p>
+          <p className="text-sm text-sidebar-foreground/60 text-center">
+            � 2024 bibiere. All rights reserved.
           </p>
         </div>
       </div>

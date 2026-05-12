@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useRef } from "react"
 import { Heart, ShoppingBag } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLocation } from "wouter"
 
 interface ProductCardProps {
   id: string
@@ -33,6 +34,7 @@ export default function ProductCard({
   const [hoverImageLoaded, setHoverImageLoaded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
+  const [, navigate] = useLocation()
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -73,11 +75,11 @@ export default function ProductCard({
       onTouchEnd={() => setTimeout(() => setIsHovered(false), 300)}
       onFocus={() => setIsHovered(true)}
       onBlur={() => setIsHovered(false)}
+      onClick={() => navigate(`/product/${id}`)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          // Navigate to product page
-          window.location.href = `/product/${id}`
+          navigate(`/product/${id}`)
         }
       }}
     >

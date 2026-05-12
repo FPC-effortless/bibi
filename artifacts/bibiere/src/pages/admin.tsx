@@ -1,0 +1,430 @@
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { useUser } from "@clerk/react";
+import { api } from "../../../../lib/convex/convex/_generated/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { hasConvexConfig } from "@/lib/runtime-config";
+import { toast } from "sonner";
+
+type ProductStatus = "draft" | "active" | "archived";
+type OrderStatus = "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled";
+
+type ProductForm = {
+  id: string;
+  slug: string;
+  status: ProductStatus;
+  name: string;
+  price: string;
+  originalPrice: string;
+  primaryImage: string;
+  hoverImage: string;
+  images: string;
+  category: string;
+  featured: boolean;
+  inStock: boolean;
+  inventoryCount: string;
+  sortOrder: string;
+  brand: string;
+  description: string;
+  details: string;
+  careInstructions: string;
+};
+
+const emptyProductForm: ProductForm = {
+  id: "",
+  slug: "",
+  status: "draft",
+  name: "",
+  price: "",
+  originalPrice: "",
+  primaryImage: "",
+  hoverImage: "",
+  images: "",
+  category: "",
+  featured: false,
+  inStock: true,
+  inventoryCount: "",
+  sortOrder: "",
+  brand: "bibiere",
+  description: "",
+  details: "",
+  careInstructions: "",
+};
+
+const productStatuses: ProductStatus[] = ["draft", "active", "archived"];
+const orderStatuses: OrderStatus[] = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
+
+function toOptionalNumber(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function splitImages(value: string) {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function productToForm(product: any): ProductForm {
+  return {
+    id: product.id ?? "",
+    slug: product.slug ?? "",
+    status: product.status ?? "active",
+    name: product.name ?? "",
+    price: String(product.price ?? ""),
+    originalPrice: product.originalPrice ? String(product.originalPrice) : "",
+    primaryImage: product.primaryImage ?? "",
+    hoverImage: product.hoverImage ?? "",
+    images: (product.images ?? []).join("\n"),
+    category: product.category ?? "",
+    featured: Boolean(product.featured),
+    inStock: Boolean(product.inStock),
+    inventoryCount: product.inventoryCount === undefined ? "" : String(product.inventoryCount),
+    sortOrder: product.sortOrder === undefined ? "" : String(product.sortOrder),
+    brand: product.brand ?? "bibiere",
+    description: product.description ?? "",
+    details: product.details ?? "",
+    careInstructions: product.careInstructions ?? "",
+  };
+}
+
+function formToArgs(form: ProductForm) {
+  return {
+    id: form.id.trim() || undefined,
+    slug: form.slug.trim() || undefined,
+    status: form.status,
+    name: form.name.trim(),
+    price: Number(form.price),
+    originalPrice: toOptionalNumber(form.originalPrice),
+    primaryImage: form.primaryImage.trim(),
+    hoverImage: form.hoverImage.trim() || undefined,
+    images: splitImages(form.images),
+    category: form.category.trim(),
+    featured: form.featured,
+    inStock: form.inStock,
+    inventoryCount: toOptionalNumber(form.inventoryCount),
+    sortOrder: toOptionalNumber(form.sortOrder),
+    brand: form.brand.trim() || "bibiere",
+    description: form.description.trim() || undefined,
+    details: form.details.trim() || undefined,
+    careInstructions: form.careInstructions.trim() || undefined,
+  };
+}
+
+export default function AdminPage() {
+  if (!hasConvexConfig) {
+    return (
+      <main className="min-h-screen bg-background px-4 py-12">
+        <div className="container mx-auto max-w-3xl rounded-lg border border-border p-6">
+          <h1 className="font-serif text-3xl font-semibold">Admin backend unavailable</h1>
+          <p className="mt-3 text-muted-foreground">
+            Set VITE_CONVEX_URL and redeploy before using admin tools.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  return <AdminContent />;
+}
+
+function AdminContent() {
+  const { isSignedIn, isLoaded } = useUser();
+  const isAdmin = useQuery(api.users.isAdmin);
+
+  if (!isLoaded || isAdmin === undefined) {
+    return <AdminShell title="Loading admin..." />;
+  }
+
+  if (!isSignedIn) {
+    return (
+      <AdminShell title="Sign in required">
+        <p className="text-muted-foreground">Use the account menu to sign in with an admin email.</p>
+      </AdminShell>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <AdminShell title="Admin access required">
+        <p className="text-muted-foreground">Your signed-in email is not listed in ADMIN_EMAILS.</p>
+      </AdminShell>
+    );
+  }
+
+  return (
+    <AdminShell title="Store Admin">
+      <Tabs defaultValue="products" className="gap-6">
+        <TabsList>
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
+        </TabsList>
+        <TabsContent value="products">
+          <ProductsAdmin />
+        </TabsContent>
+        <TabsContent value="orders">
+          <OrdersAdmin />
+        </TabsContent>
+      </Tabs>
+    </AdminShell>
+  );
+}
+
+function AdminShell({ title, children }: { title: string; children?: ReactNode }) {
+  return (
+    <main className="min-h-screen bg-background px-4 py-10">
+      <div className="container mx-auto max-w-7xl">
+        <div className="mb-8">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-bibiere-burgundy">
+            bibiere operations
+          </p>
+          <h1 className="mt-2 font-serif text-4xl font-semibold">{title}</h1>
+        </div>
+        {children}
+      </div>
+    </main>
+  );
+}
+
+function ProductsAdmin() {
+  const products = useQuery(api.products.adminList) ?? [];
+  const createProduct = useMutation(api.products.adminCreate);
+  const updateProduct = useMutation(api.products.adminUpdate);
+  const archiveProduct = useMutation(api.products.adminArchive);
+  const setStatus = useMutation(api.products.adminSetStatus);
+  const setFeatured = useMutation(api.products.adminSetFeatured);
+  const setInventory = useMutation(api.products.adminSetInventory);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const selectedProduct = products.find((product: any) => product._id === selectedProductId);
+  const [form, setForm] = useState<ProductForm>(emptyProductForm);
+
+  useEffect(() => {
+    setForm(selectedProduct ? productToForm(selectedProduct) : emptyProductForm);
+  }, [selectedProduct]);
+
+  const sortedProducts = useMemo(
+    () => [...products].sort((a: any, b: any) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999)),
+    [products],
+  );
+
+  const updateField = <K extends keyof ProductForm>(key: K, value: ProductForm[K]) => {
+    setForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const submitProduct = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!form.name.trim() || !form.primaryImage.trim() || !form.category.trim()) {
+      toast.error("Name, image, and category are required");
+      return;
+    }
+    if (!Number.isFinite(Number(form.price))) {
+      toast.error("Price must be a valid number");
+      return;
+    }
+
+    const payload = formToArgs(form);
+    if (selectedProduct) {
+      await updateProduct({ productId: selectedProduct._id, ...payload });
+      toast.success("Product updated");
+    } else {
+      await createProduct(payload);
+      toast.success("Product created");
+    }
+    setSelectedProductId(null);
+    setForm(emptyProductForm);
+  };
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <section className="rounded-lg border border-border bg-card p-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="font-serif text-2xl font-semibold">Catalog</h2>
+          <Button variant="outline" onClick={() => setSelectedProductId(null)}>New product</Button>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Product</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Inventory</TableHead>
+              <TableHead>Featured</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedProducts.map((product: any) => (
+              <TableRow key={product._id}>
+                <TableCell>
+                  <div className="font-medium">{product.name}</div>
+                  <div className="text-xs text-muted-foreground">{product.category} · ${product.price}</div>
+                </TableCell>
+                <TableCell>
+                  <Select
+                    value={product.status ?? "active"}
+                    onValueChange={(value) => setStatus({ productId: product._id, status: value as ProductStatus })}
+                  >
+                    <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {productStatuses.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Input
+                    className="w-24"
+                    type="number"
+                    defaultValue={product.inventoryCount ?? ""}
+                    onBlur={(event) => setInventory({
+                      productId: product._id,
+                      inventoryCount: Number(event.currentTarget.value || 0),
+                    })}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    size="sm"
+                    variant={product.featured ? "default" : "outline"}
+                    onClick={() => setFeatured({ productId: product._id, featured: !product.featured })}
+                  >
+                    {product.featured ? "Featured" : "Set"}
+                  </Button>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setSelectedProductId(product._id)}>Edit</Button>
+                    <Button size="sm" variant="destructive" onClick={() => archiveProduct({ productId: product._id })}>Archive</Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-4 font-serif text-2xl font-semibold">
+          {selectedProduct ? "Edit product" : "Create product"}
+        </h2>
+        <form className="space-y-4" onSubmit={submitProduct}>
+          <Input placeholder="Name" value={form.name} onChange={(e) => updateField("name", e.target.value)} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input placeholder="ID" value={form.id} onChange={(e) => updateField("id", e.target.value)} />
+            <Input placeholder="Slug" value={form.slug} onChange={(e) => updateField("slug", e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input placeholder="Price" type="number" value={form.price} onChange={(e) => updateField("price", e.target.value)} />
+            <Input placeholder="Original price" type="number" value={form.originalPrice} onChange={(e) => updateField("originalPrice", e.target.value)} />
+          </div>
+          <Input placeholder="Primary image URL/path" value={form.primaryImage} onChange={(e) => updateField("primaryImage", e.target.value)} />
+          <Input placeholder="Hover image URL/path" value={form.hoverImage} onChange={(e) => updateField("hoverImage", e.target.value)} />
+          <Textarea placeholder="Gallery images, one URL/path per line" value={form.images} onChange={(e) => updateField("images", e.target.value)} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input placeholder="Category" value={form.category} onChange={(e) => updateField("category", e.target.value)} />
+            <Input placeholder="Brand" value={form.brand} onChange={(e) => updateField("brand", e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input placeholder="Inventory" type="number" value={form.inventoryCount} onChange={(e) => updateField("inventoryCount", e.target.value)} />
+            <Input placeholder="Sort order" type="number" value={form.sortOrder} onChange={(e) => updateField("sortOrder", e.target.value)} />
+          </div>
+          <Select value={form.status} onValueChange={(value) => updateField("status", value as ProductStatus)}>
+            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {productStatuses.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={form.featured} onChange={(e) => updateField("featured", e.target.checked)} />
+              Featured
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={form.inStock} onChange={(e) => updateField("inStock", e.target.checked)} />
+              In stock
+            </label>
+          </div>
+          <Textarea placeholder="Description" value={form.description} onChange={(e) => updateField("description", e.target.value)} />
+          <Textarea placeholder="Details" value={form.details} onChange={(e) => updateField("details", e.target.value)} />
+          <Textarea placeholder="Care instructions" value={form.careInstructions} onChange={(e) => updateField("careInstructions", e.target.value)} />
+          <div className="flex gap-2">
+            <Button type="submit">{selectedProduct ? "Save changes" : "Create product"}</Button>
+            {selectedProduct && <Button type="button" variant="outline" onClick={() => setSelectedProductId(null)}>Cancel</Button>}
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function OrdersAdmin() {
+  const orders = useQuery(api.payments.adminList) ?? [];
+  const updateStatus = useMutation(api.payments.adminUpdateStatus);
+
+  return (
+    <section className="rounded-lg border border-border bg-card p-4">
+      <h2 className="mb-4 font-serif text-2xl font-semibold">Orders</h2>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Order</TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Items</TableHead>
+            <TableHead>Total</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Payment Ref</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {orders.map((order: any) => (
+            <TableRow key={order._id}>
+              <TableCell>
+                <div className="font-mono text-xs">{order._id}</div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(order._creationTime).toLocaleString()}
+                </div>
+              </TableCell>
+              <TableCell>{order.customer?.email ?? "Unknown customer"}</TableCell>
+              <TableCell>{order.itemCount}</TableCell>
+              <TableCell>{order.currency} {order.totalAmount}</TableCell>
+              <TableCell>
+                <Select
+                  value={order.status}
+                  onValueChange={(value) => updateStatus({ orderId: order._id, status: value as OrderStatus })}
+                >
+                  <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {orderStatuses.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell className="font-mono text-xs">{order.paystackReference ?? "none"}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      {orders.length === 0 && (
+        <p className="py-10 text-center text-muted-foreground">No orders yet.</p>
+      )}
+    </section>
+  );
+}

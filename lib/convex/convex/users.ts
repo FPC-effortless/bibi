@@ -1,5 +1,6 @@
 import { mutation, query, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAdmin } from "./adminAuth";
 
 export const store = mutation({
   args: {},
@@ -41,3 +42,15 @@ export async function getCurrentUser(ctx: QueryCtx) {
     .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
     .unique();
 }
+
+export const isAdmin = query({
+  args: {},
+  handler: async (ctx) => {
+    try {
+      await requireAdmin(ctx);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+});

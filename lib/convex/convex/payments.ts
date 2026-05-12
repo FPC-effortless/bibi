@@ -2,6 +2,24 @@ import { mutation, query, action, internalMutation, internalQuery } from "./_gen
 import { v } from "convex/values";
 import { getCurrentUser } from "./users";
 import { internal } from "./_generated/api";
+import { requireAdmin } from "./adminAuth";
+
+const orderStatus = v.union(
+  v.literal("pending"),
+  v.literal("paid"),
+  v.literal("processing"),
+  v.literal("shipped"),
+  v.literal("delivered"),
+  v.literal("cancelled"),
+);
+
+function allowMockPayments() {
+  return process.env.ALLOW_MOCK_PAYMENTS === "true";
+}
+
+function isCustomerVisibleProduct(product: { status?: string; inStock: boolean } | null) {
+  return Boolean(product) && product!.status !== "draft" && product!.status !== "archived";
+}
 
 export const list = query({
   args: {},
@@ -19,10 +37,66 @@ export const list = query({
 export const getItems = query({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order || order.userId !== user._id) {
+      throw new Error("Order not found");
+    }
+
     return await ctx.db
       .query("orderItems")
       .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
       .collect();
+  },
+});
+
+export const adminList = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const orders = await ctx.db.query("orders").order("desc").collect();
+    return await Promise.all(
+      orders.map(async (order) => {
+        const user = await ctx.db.get(order.userId);
+        const items = await ctx.db
+          .query("orderItems")
+          .withIndex("by_order", (q) => q.eq("orderId", order._id))
+          .collect();
+        return {
+          ...order,
+          customer: user,
+          itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+        };
+      }),
+    );
+  },
+});
+
+export const adminGet = query({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+    const order = await ctx.db.get(args.orderId);
+    if (!order) throw new Error("Order not found");
+    const customer = await ctx.db.get(order.userId);
+    const items = await ctx.db
+      .query("orderItems")
+      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
+      .collect();
+    return { order, customer, items };
+  },
+});
+
+export const adminUpdateStatus = mutation({
+  args: { orderId: v.id("orders"), status: orderStatus },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+    await ctx.db.patch(args.orderId, {
+      status: args.status,
+      updatedAt: Date.now(),
+    });
   },
 });
 
@@ -59,6 +133,9 @@ export const initializePayment = action({
     const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
     if (!PAYSTACK_SECRET_KEY) {
+      if (!allowMockPayments()) {
+        throw new Error("Payment provider is not configured");
+      }
       return {
         status: true,
         message: "Mock payment initialized",
@@ -103,6 +180,9 @@ export const verifyPayment = action({
     const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
     if (!PAYSTACK_SECRET_KEY) {
+      if (!allowMockPayments()) {
+        throw new Error("Payment provider is not configured");
+      }
       // Mock verification
       await ctx.runMutation(internal.payments.fulfillOrderInternal, { reference: args.reference });
       return { status: true, message: "Payment verified (mock)", paid: true };
@@ -129,6 +209,9 @@ export const getCartInternal = internalQuery({
     const items = await ctx.db.query("cartItems").withIndex("by_user", (q) => q.eq("userId", user._id)).collect();
     return await Promise.all(items.map(async item => {
         const product = await ctx.db.query("products").filter(q => q.eq(q.field("id"), item.productId)).unique();
+        if (!isCustomerVisibleProduct(product) || !product?.inStock) {
+          throw new Error("Cart contains an unavailable product");
+        }
         return { ...item, name: product?.name ?? "", price: product?.price ?? 0, image: product?.primaryImage ?? "" };
     }));
   }
@@ -154,6 +237,7 @@ export const createOrderInternal = internalMutation({
       status: "pending",
       totalAmount: args.totalAmount,
       currency: args.currency,
+      updatedAt: Date.now(),
     });
     for (const item of args.items) {
       await ctx.db.insert("orderItems", { ...item, orderId });

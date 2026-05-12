@@ -32,14 +32,6 @@ function useConvexCommerce() {
   const cart = useQuery(api.cart.get) ?? []
   const wishlist = useQuery(api.wishlist.get) ?? []
   
-  // Seed products if none exist (Convenience for first run)
-  const seedProducts = useMutation(api.products.seed)
-  useEffect(() => {
-    if (products.length === 0 && isLoaded) {
-      void seedProducts()
-    }
-  }, [products, seedProducts, isLoaded])
-
   // Convex Mutations
   const addCartMutation = useMutation(api.cart.add)
   const updateCartMutation = useMutation(api.cart.update)
