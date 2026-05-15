@@ -37,6 +37,7 @@ import SearchPage from "@/pages/search";
 import FAQPage from "@/pages/faq";
 import ContactPage from "@/pages/contact";
 import AdminPage from "@/pages/admin";
+import OrderConfirmedPage from "@/pages/order-confirmed";
 import {
   CareersPage,
   HeritagePage,
@@ -183,6 +184,7 @@ function AppRoutes() {
           <Route path="/cart" component={CartPage} />
           <Route path="/wishlist" component={WishlistPage} />
           <Route path="/checkout" component={CheckoutPage} />
+          <Route path="/order-confirmed" component={OrderConfirmedPage} />
           <Route path="/account" component={AccountPage} />
           <Route path="/search" component={SearchPage} />
           <Route path="/faq" component={FAQPage} />

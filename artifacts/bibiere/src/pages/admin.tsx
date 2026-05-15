@@ -46,6 +46,19 @@ type ProductForm = {
   description: string;
   details: string;
   careInstructions: string;
+  sizes: string;
+  colors: string;
+};
+
+type ContentPageStatus = "draft" | "active" | "archived";
+
+type ContentPageForm = {
+  slug: string;
+  status: ContentPageStatus;
+  eyebrow: string;
+  title: string;
+  intro: string;
+  sections: string;
 };
 
 const emptyProductForm: ProductForm = {
@@ -67,10 +80,27 @@ const emptyProductForm: ProductForm = {
   description: "",
   details: "",
   careInstructions: "",
+  sizes: "",
+  colors: "",
 };
 
 const productStatuses: ProductStatus[] = ["draft", "active", "archived"];
+const pageStatuses: ContentPageStatus[] = ["draft", "active", "archived"];
 const orderStatuses: OrderStatus[] = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
+const customerPageSlugs = [
+  "home",
+  "faq",
+  "contact",
+  "returns",
+  "track-order",
+  "size-guide",
+  "privacy",
+  "terms",
+  "heritage",
+  "sustainability",
+  "careers",
+  "press",
+];
 
 function toOptionalNumber(value: string) {
   const trimmed = value.trim();
@@ -84,6 +114,56 @@ function splitImages(value: string) {
     .split("\n")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function splitLines(value: string) {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parseColors(value: string) {
+  return splitLines(value).map((line) => {
+    const [name = "", colorValue = ""] = line.split("|").map((part) => part.trim());
+    return {
+      name,
+      value: colorValue || "#1f2937",
+    };
+  }).filter((color) => color.name);
+}
+
+function parseSections(value: string) {
+  return splitLines(value).map((line) => {
+    const [title = "", body = ""] = line.split("|").map((part) => part.trim());
+    return { title, body };
+  }).filter((section) => section.title && section.body);
+}
+
+function sectionsToText(sections: Array<{ title: string; body: string }> = []) {
+  return sections.map((section) => `${section.title} | ${section.body}`).join("\n");
+}
+
+function emptyPageForm(slug = "returns"): ContentPageForm {
+  return {
+    slug,
+    status: "draft",
+    eyebrow: "",
+    title: "",
+    intro: "",
+    sections: "",
+  };
+}
+
+function pageToForm(page: any): ContentPageForm {
+  return {
+    slug: page.slug ?? "",
+    status: page.status ?? "draft",
+    eyebrow: page.eyebrow ?? "",
+    title: page.title ?? "",
+    intro: page.intro ?? "",
+    sections: sectionsToText(page.sections ?? []),
+  };
 }
 
 function productToForm(product: any): ProductForm {
@@ -106,6 +186,8 @@ function productToForm(product: any): ProductForm {
     description: product.description ?? "",
     details: product.details ?? "",
     careInstructions: product.careInstructions ?? "",
+    sizes: (product.sizes ?? []).join("\n"),
+    colors: (product.colors ?? []).map((color: any) => `${color.name} | ${color.value}`).join("\n"),
   };
 }
 
@@ -129,6 +211,8 @@ function formToArgs(form: ProductForm) {
     description: form.description.trim() || undefined,
     details: form.details.trim() || undefined,
     careInstructions: form.careInstructions.trim() || undefined,
+    sizes: splitLines(form.sizes),
+    colors: parseColors(form.colors),
   };
 }
 
@@ -179,12 +263,16 @@ function AdminContent() {
         <TabsList>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="pages">Pages</TabsTrigger>
         </TabsList>
         <TabsContent value="products">
           <ProductsAdmin />
         </TabsContent>
         <TabsContent value="orders">
           <OrdersAdmin />
+        </TabsContent>
+        <TabsContent value="pages">
+          <ContentPagesAdmin />
         </TabsContent>
       </Tabs>
     </AdminShell>
@@ -366,10 +454,111 @@ function ProductsAdmin() {
           <Textarea placeholder="Description" value={form.description} onChange={(e) => updateField("description", e.target.value)} />
           <Textarea placeholder="Details" value={form.details} onChange={(e) => updateField("details", e.target.value)} />
           <Textarea placeholder="Care instructions" value={form.careInstructions} onChange={(e) => updateField("careInstructions", e.target.value)} />
+          <Textarea placeholder="Sizes, one per line" value={form.sizes} onChange={(e) => updateField("sizes", e.target.value)} />
+          <Textarea placeholder="Colors, one per line: Name | #hex" value={form.colors} onChange={(e) => updateField("colors", e.target.value)} />
           <div className="flex gap-2">
             <Button type="submit">{selectedProduct ? "Save changes" : "Create product"}</Button>
             {selectedProduct && <Button type="button" variant="outline" onClick={() => setSelectedProductId(null)}>Cancel</Button>}
           </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function ContentPagesAdmin() {
+  const pages = useQuery(api.contentPages.adminList) ?? [];
+  const upsertPage = useMutation(api.contentPages.adminUpsert);
+  const availableSlugs = useMemo(
+    () => Array.from(new Set([...customerPageSlugs, ...pages.map((page: any) => page.slug)])).sort(),
+    [pages],
+  );
+  const [selectedSlug, setSelectedSlug] = useState(customerPageSlugs[0]);
+  const selectedPage = pages.find((page: any) => page.slug === selectedSlug);
+  const [form, setForm] = useState<ContentPageForm>(emptyPageForm(customerPageSlugs[0]));
+
+  useEffect(() => {
+    setForm(selectedPage ? pageToForm(selectedPage) : emptyPageForm(selectedSlug));
+  }, [selectedPage, selectedSlug]);
+
+  const updateField = <K extends keyof ContentPageForm>(key: K, value: ContentPageForm[K]) => {
+    setForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const submitPage = async (event: FormEvent) => {
+    event.preventDefault();
+    const sections = parseSections(form.sections);
+    if (!form.slug.trim() || !form.title.trim() || !form.eyebrow.trim() || !form.intro.trim()) {
+      toast.error("Slug, eyebrow, title, and intro are required");
+      return;
+    }
+    if (sections.length === 0) {
+      toast.error("Add at least one section using: Title | Body");
+      return;
+    }
+
+    await upsertPage({
+      slug: form.slug.trim().toLowerCase(),
+      status: form.status,
+      eyebrow: form.eyebrow.trim(),
+      title: form.title.trim(),
+      intro: form.intro.trim(),
+      sections,
+    });
+    toast.success("Page content saved");
+    setSelectedSlug(form.slug.trim().toLowerCase());
+  };
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <section className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-4 font-serif text-2xl font-semibold">Customer pages</h2>
+        <div className="space-y-2">
+          {availableSlugs.map((slug) => {
+            const page = pages.find((item: any) => item.slug === slug);
+            return (
+              <button
+                key={slug}
+                type="button"
+                onClick={() => setSelectedSlug(slug)}
+                className={`w-full rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                  selectedSlug === slug
+                    ? "border-bibiere-burgundy bg-bibiere-burgundy/10 text-bibiere-burgundy"
+                    : "border-border hover:bg-muted"
+                }`}
+              >
+                <span className="font-medium">/{slug}</span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {page ? page.status : "not created"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-4 font-serif text-2xl font-semibold">Edit page content</h2>
+        <form className="space-y-4" onSubmit={submitPage}>
+          <div className="grid gap-3 md:grid-cols-[1fr_180px]">
+            <Input placeholder="Slug" value={form.slug} onChange={(e) => updateField("slug", e.target.value)} />
+            <Select value={form.status} onValueChange={(value) => updateField("status", value as ContentPageStatus)}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {pageStatuses.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <Input placeholder="Eyebrow" value={form.eyebrow} onChange={(e) => updateField("eyebrow", e.target.value)} />
+          <Input placeholder="Title" value={form.title} onChange={(e) => updateField("title", e.target.value)} />
+          <Textarea placeholder="Intro" value={form.intro} onChange={(e) => updateField("intro", e.target.value)} />
+          <Textarea
+            className="min-h-40"
+            placeholder="Sections, one per line: Section title | Section body"
+            value={form.sections}
+            onChange={(e) => updateField("sections", e.target.value)}
+          />
+          <Button type="submit">Save page</Button>
         </form>
       </section>
     </div>

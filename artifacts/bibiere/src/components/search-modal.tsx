@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
 import { Search, Loader2, TrendingUp, Filter, X, ArrowUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useCommerce } from "@/components/commerce-provider"
 
 interface SearchModalProps {
   isOpen: boolean
@@ -17,7 +18,7 @@ interface SearchModalProps {
 }
 
 interface SearchResult {
-  id: number
+  id: string
   name: string
   price: number
   originalPrice?: number
@@ -45,6 +46,7 @@ interface SearchFilters {
 type SortOption = 'relevance' | 'price-low' | 'price-high' | 'newest' | 'rating' | 'name'
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
+  const { products } = useCommerce()
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
@@ -66,89 +68,20 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     showNew: false
   })
 
-  // Mock enhanced search results with more detailed data
-  const allProducts: SearchResult[] = [
-    {
-      id: 1,
-      name: "Elegant Silk Dress",
-      price: 299,
-      originalPrice: 399,
-      image: "/elegant-black-silk-dress.png",
-      category: "Dresses",
-      brand: "bibiere",
-      color: "Black",
-      size: ["XS", "S", "M", "L"],
-      rating: 4.8,
-      isNew: false,
-      onSale: true
-    },
-    {
-      id: 2,
-      name: "Cashmere Wool Coat",
-      price: 599,
-      image: "/cozy-wool-coat.png",
-      category: "Outerwear",
-      brand: "bibiere",
-      color: "Camel",
-      size: ["S", "M", "L", "XL"],
-      rating: 4.9,
-      isNew: true,
-      onSale: false
-    },
-    {
-      id: 3,
-      name: "Premium Tailored Blazer",
-      price: 449,
-      image: "/premium-tailored-blazer.png",
-      category: "Blazers",
-      brand: "bibiere",
-      color: "Navy",
-      size: ["XS", "S", "M", "L", "XL"],
-      rating: 4.7,
-      isNew: false,
-      onSale: false
-    },
-    {
-      id: 4,
-      name: "Luxury Quilted Handbag",
-      price: 799,
-      originalPrice: 899,
-      image: "/luxury-quilted-handbag.png",
-      category: "Accessories",
-      brand: "bibiere",
-      color: "Black",
-      size: ["One Size"],
-      rating: 4.6,
-      isNew: false,
-      onSale: true
-    },
-    {
-      id: 5,
-      name: "Cashmere Scarf",
-      price: 189,
-      image: "/cashmere-scarf.png",
-      category: "Accessories",
-      brand: "bibiere",
-      color: "Beige",
-      size: ["One Size"],
-      rating: 4.5,
-      isNew: true,
-      onSale: false
-    },
-    {
-      id: 6,
-      name: "Luxury Wristwatch",
-      price: 1299,
-      image: "/luxury-wristwatch.png",
-      category: "Accessories",
-      brand: "bibiere",
-      color: "Gold",
-      size: ["One Size"],
-      rating: 4.9,
-      isNew: true,
-      onSale: false
-    }
-  ]
+  const allProducts: SearchResult[] = products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    originalPrice: product.originalPrice,
+    image: product.primaryImage,
+    category: product.category,
+    brand: product.brand,
+    color: "Default",
+    size: ["One Size"],
+    rating: 5,
+    isNew: false,
+    onSale: Boolean(product.originalPrice && product.originalPrice > product.price),
+  }))
 
   const popularSearches = [
     "Silk dresses",

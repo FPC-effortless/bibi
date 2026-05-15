@@ -1,12 +1,40 @@
 import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../../../lib/convex/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Phone, MapPin, Clock, CheckCircle2 } from "lucide-react";
+import { hasConvexConfig } from "@/lib/runtime-config";
+
+type ContactMethod = {
+  title: string;
+  body: string;
+};
 
 export default function ContactPage() {
+  if (hasConvexConfig) {
+    return <BackendContactPage />;
+  }
+
+  return <ContactPageView page={null} />;
+}
+
+function BackendContactPage() {
+  const page = useQuery(api.contentPages.get, { slug: "contact" });
+  return <ContactPageView page={page} />;
+}
+
+function ContactPageView({ page }: { page: any }) {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", subject: "", message: "" });
+  const contactMethods: ContactMethod[] = page?.sections.length ? page.sections : [
+    { title: "Email", body: "hello@bibiere.com\nWe typically respond within 24 hours" },
+    { title: "Phone", body: "+1 (888) 424-7437\nMonday-Friday, 9am-6pm EST" },
+    { title: "Address", body: "123 Luxury Avenue\nNew York, NY 10001" },
+    { title: "Business Hours", body: "Monday-Friday: 9am-6pm EST\nSaturday: 10am-4pm EST" },
+  ];
+  const contactIcons = [Mail, Phone, MapPin, Clock];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +62,9 @@ export default function ContactPage() {
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-serif font-bold mb-4">Contact Us</h1>
+          <h1 className="text-4xl font-serif font-bold mb-4">{page?.title ?? "Contact Us"}</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            We're here to help with any questions about our collections, sizing, orders, or anything else. Reach out to our dedicated team.
+            {page?.intro ?? "We're here to help with any questions about our collections, sizing, orders, or anything else. Reach out to our dedicated team."}
           </p>
         </div>
 
@@ -114,28 +142,27 @@ export default function ContactPage() {
 
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-serif font-semibold mb-4">Get in touch</h2>
+              <h2 className="text-2xl font-serif font-semibold mb-4">{page?.eyebrow ?? "Get in touch"}</h2>
               <p className="text-muted-foreground">Prefer to reach out directly? Here are all the ways you can contact us.</p>
             </div>
 
             <div className="space-y-6">
-              {[
-                { Icon: Mail, title: "Email", line1: "hello@bibiere.com", line2: "We typically respond within 24 hours" },
-                { Icon: Phone, title: "Phone", line1: "+1 (888) 424-7437", line2: "Monday–Friday, 9am–6pm EST" },
-                { Icon: MapPin, title: "Address", line1: "123 Luxury Avenue", line2: "New York, NY 10001" },
-                { Icon: Clock, title: "Business Hours", line1: "Monday–Friday: 9am–6pm EST", line2: "Saturday: 10am–4pm EST" },
-              ].map(({ Icon, title, line1, line2 }) => (
-                <div key={title} className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-bibiere-burgundy/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Icon className="h-5 w-5 text-bibiere-burgundy" />
+              {contactMethods.map((method: ContactMethod, index: number) => {
+                const Icon = contactIcons[index % contactIcons.length];
+                const [line1 = "", line2 = ""] = method.body.split("\n");
+                return (
+                  <div key={method.title} className="flex items-start space-x-4">
+                    <div className="w-10 h-10 bg-bibiere-burgundy/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Icon className="h-5 w-5 text-bibiere-burgundy" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">{method.title}</h3>
+                      <p className="text-muted-foreground">{line1}</p>
+                      <p className="text-sm text-muted-foreground">{line2}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">{title}</h3>
-                    <p className="text-muted-foreground">{line1}</p>
-                    <p className="text-sm text-muted-foreground">{line2}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

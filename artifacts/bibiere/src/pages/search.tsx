@@ -1,52 +1,52 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Search, Filter, X } from "lucide-react";
+import { Search } from "lucide-react";
+import { useCommerce } from "@/components/commerce-provider";
 
-const mockProducts = [
-  { id: "1", name: "Elegant Silk Evening Dress", price: 1299, originalPrice: 1599, category: "Dresses", color: "Black", material: "Silk", rating: 4.8, reviewCount: 127 },
-  { id: "2", name: "Cashmere Blend Coat", price: 899, originalPrice: undefined, category: "Outerwear", color: "Camel", material: "Cashmere", rating: 4.9, reviewCount: 89 },
-  { id: "3", name: "Premium Wool Blazer", price: 1599, originalPrice: undefined, category: "Blazers", color: "Navy", material: "Wool", rating: 4.7, reviewCount: 156 },
-  { id: "4", name: "Silk Scarf Collection", price: 299, originalPrice: 399, category: "Accessories", color: "Multi", material: "Silk", rating: 4.6, reviewCount: 203 },
-  { id: "5", name: "Luxury Quilted Handbag", price: 449, originalPrice: undefined, category: "Accessories", color: "Black", material: "Leather", rating: 4.7, reviewCount: 312 },
-  { id: "6", name: "Tailored Wide Leg Trousers", price: 695, originalPrice: undefined, category: "Trousers", color: "Ivory", material: "Crepe", rating: 4.5, reviewCount: 67 },
-];
-
-const categories = ["All", "Dresses", "Outerwear", "Blazers", "Accessories", "Trousers"];
 const sortOptions = [
   { value: "relevance", label: "Relevance" },
   { value: "price-low", label: "Price: Low to High" },
   { value: "price-high", label: "Price: High to Low" },
-  { value: "rating", label: "Top Rated" },
+  { value: "name", label: "Name" },
 ];
 
 export default function SearchPage() {
   const searchStr = useSearch();
   const params = new URLSearchParams(searchStr);
+  const { products } = useCommerce();
   const [query, setQuery] = useState(params.get("q") || "");
   const [inputValue, setInputValue] = useState(params.get("q") || "");
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("relevance");
 
-  const filtered = mockProducts
-    .filter((p) => {
-      const matchesQuery =
-        !query ||
-        p.name.toLowerCase().includes(query.toLowerCase()) ||
-        p.category.toLowerCase().includes(query.toLowerCase()) ||
-        p.material.toLowerCase().includes(query.toLowerCase());
-      const matchesCategory = category === "All" || p.category === category;
-      return matchesQuery && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (sortBy === "price-low") return a.price - b.price;
-      if (sortBy === "price-high") return b.price - a.price;
-      if (sortBy === "rating") return b.rating - a.rating;
-      return 0;
-    });
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(products.map((product) => product.category))).sort()],
+    [products],
+  );
+
+  const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return [...products]
+      .filter((product) => {
+        const matchesQuery =
+          !normalizedQuery ||
+          product.name.toLowerCase().includes(normalizedQuery) ||
+          product.category.toLowerCase().includes(normalizedQuery) ||
+          product.brand.toLowerCase().includes(normalizedQuery) ||
+          product.description?.toLowerCase().includes(normalizedQuery);
+        const matchesCategory = category === "All" || product.category === category;
+        return matchesQuery && matchesCategory;
+      })
+      .sort((a, b) => {
+        if (sortBy === "price-low") return a.price - b.price;
+        if (sortBy === "price-high") return b.price - a.price;
+        if (sortBy === "name") return a.name.localeCompare(b.name);
+        return (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999);
+      });
+  }, [category, products, query, sortBy]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,23 +121,19 @@ export default function SearchPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map((product) => (
               <Link key={product.id} href={`/product/${product.id}`} className="group block border border-border rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-[3/4] bg-muted flex items-center justify-center">
-                  <p className="text-muted-foreground text-sm">{product.category}</p>
+                <div className="aspect-[3/4] bg-muted overflow-hidden">
+                  <img src={product.primaryImage || "/placeholder.svg"} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 </div>
                 <div className="p-4 space-y-2">
                   <h3 className="font-serif font-semibold group-hover:text-bibiere-burgundy transition-colors line-clamp-2">
                     {product.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground">{product.category} · {product.material}</p>
+                  <p className="text-sm text-muted-foreground">{product.category} · {product.brand}</p>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">${product.price}</span>
                     {product.originalPrice && (
                       <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
                     )}
-                  </div>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <span>★ {product.rating}</span>
-                    <span>({product.reviewCount})</span>
                   </div>
                 </div>
               </Link>

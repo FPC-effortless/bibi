@@ -1,15 +1,19 @@
 import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../../../lib/convex/convex/_generated/api";
 import HeroSection from "@/components/hero-section";
 import ProductGrid from "@/components/product-grid";
 import SizeGuideModal from "@/components/size-guide-modal";
 import { Button } from "@/components/ui/button";
+import { hasConvexConfig } from "@/lib/runtime-config";
 
 export default function HomePage() {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const homeContent = hasConvexConfig ? <HomeHeroContent /> : <HeroSection content={null} />;
 
   return (
     <main id="main-content" className="min-h-screen bg-background">
-      <HeroSection />
+      {homeContent}
 
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
@@ -28,5 +32,20 @@ export default function HomePage() {
 
       <SizeGuideModal isOpen={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} />
     </main>
+  );
+}
+
+function HomeHeroContent() {
+  const homeContent = useQuery(api.contentPages.get, { slug: "home" });
+
+  return (
+    <HeroSection
+      content={homeContent ? {
+        eyebrow: homeContent.eyebrow,
+        title: homeContent.title,
+        intro: homeContent.intro,
+        values: homeContent.sections.map((section) => section.title),
+      } : null}
+    />
   );
 }

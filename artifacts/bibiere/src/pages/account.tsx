@@ -9,6 +9,7 @@ import { useCommerce } from "@/components/commerce-provider";
 import { useQuery } from "convex/react";
 import { api } from "../../../../lib/convex/convex/_generated/api";
 import { Order, WishlistItem } from "@/types";
+import { hasConvexConfig } from "@/lib/runtime-config";
 
 const statusColors: Record<string, string> = {
   paid: "bg-green-100 text-green-800",
@@ -19,12 +20,23 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AccountPage() {
+  if (hasConvexConfig) {
+    return <BackendAccountPage />;
+  }
+
+  return <AccountPageView orders={[]} ordersLoading={false} />;
+}
+
+function BackendAccountPage() {
+  const orders = useQuery(api.payments.list);
+  return <AccountPageView orders={orders ?? []} ordersLoading={orders === undefined} />;
+}
+
+function AccountPageView({ orders, ordersLoading }: { orders: Order[]; ordersLoading: boolean }) {
   const [tab, setTab] = useState("orders");
   const { wishlist } = useCommerce();
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
-  const orders = useQuery(api.payments.list) ?? [];
-  const ordersLoading = orders === undefined;
 
   if (!isLoaded) {
     return (

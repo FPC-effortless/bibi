@@ -28,6 +28,11 @@ const productInput = {
   description: v.optional(v.string()),
   details: v.optional(v.string()),
   careInstructions: v.optional(v.string()),
+  sizes: v.optional(v.array(v.string())),
+  colors: v.optional(v.array(v.object({
+    name: v.string(),
+    value: v.string(),
+  }))),
 };
 
 function slugify(value: string) {
@@ -144,6 +149,8 @@ export const adminCreate = mutation({
       description: args.description,
       details: args.details,
       careInstructions: args.careInstructions,
+      sizes: args.sizes,
+      colors: args.colors,
       updatedAt: Date.now(),
     });
   },
@@ -184,6 +191,8 @@ export const adminUpdate = mutation({
       description: args.description,
       details: args.details,
       careInstructions: args.careInstructions,
+      sizes: args.sizes,
+      colors: args.colors,
       updatedAt: Date.now(),
     }));
   },
@@ -263,6 +272,8 @@ export const seed = mutation({
         inventoryCount: 12,
         sortOrder: 10,
         brand: "bibiere",
+        sizes: ["XS", "S", "M", "L", "XL"],
+        colors: [{ name: "Black", value: "#111827" }],
       },
       {
         id: "2",
@@ -278,6 +289,8 @@ export const seed = mutation({
         inventoryCount: 0,
         sortOrder: 20,
         brand: "bibiere",
+        sizes: ["S", "M", "L"],
+        colors: [{ name: "Camel", value: "#b08968" }],
       },
       {
         id: "3",
@@ -293,6 +306,8 @@ export const seed = mutation({
         inventoryCount: 8,
         sortOrder: 30,
         brand: "bibiere",
+        sizes: ["One Size"],
+        colors: [{ name: "Black", value: "#111827" }],
       },
       {
         id: "4",
@@ -308,6 +323,8 @@ export const seed = mutation({
         inventoryCount: 10,
         sortOrder: 40,
         brand: "bibiere",
+        sizes: ["XS", "S", "M", "L", "XL"],
+        colors: [{ name: "Navy", value: "#1f2a44" }],
       },
       {
         id: "5",
@@ -323,6 +340,8 @@ export const seed = mutation({
         inventoryCount: 18,
         sortOrder: 50,
         brand: "bibiere",
+        sizes: ["One Size"],
+        colors: [{ name: "Oat", value: "#d8cab8" }],
       },
       {
         id: "6",
@@ -338,6 +357,8 @@ export const seed = mutation({
         inventoryCount: 6,
         sortOrder: 60,
         brand: "bibiere",
+        sizes: ["One Size"],
+        colors: [{ name: "Gold", value: "#c7a34f" }],
       },
     ];
 

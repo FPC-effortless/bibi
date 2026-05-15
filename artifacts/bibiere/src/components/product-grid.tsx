@@ -11,6 +11,7 @@ interface ProductGridProps {
   title?: string
   subtitle?: string
   showFeaturedOnly?: boolean
+  categorySlug?: string
   maxItems?: number
   className?: string
 }
@@ -19,14 +20,22 @@ export default function ProductGrid({
   title = "Featured Products",
   subtitle = "Discover bibiere's curated collection of timeless elegance",
   showFeaturedOnly = false,
+  categorySlug,
   maxItems,
   className,
 }: ProductGridProps) {
   const { products, loading, wishlistProductIds, toggleWishlist, addProductToCart } = useCommerce()
 
   const displayProducts = useMemo(
-    () => products.filter((product: Product) => !showFeaturedOnly || product.featured).slice(0, maxItems),
-    [products, showFeaturedOnly, maxItems],
+    () => products
+      .filter((product: Product) => !showFeaturedOnly || product.featured)
+      .filter((product: Product) => {
+        if (!categorySlug) return true
+        if (categorySlug === "new-arrivals") return true
+        return product.category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") === categorySlug
+      })
+      .slice(0, maxItems),
+    [products, showFeaturedOnly, categorySlug, maxItems],
   )
 
   const handleWishlistToggle = async (productId: string) => {

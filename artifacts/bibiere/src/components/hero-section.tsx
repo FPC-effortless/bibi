@@ -1,7 +1,20 @@
 
 import { Button } from "@/components/ui/button"
+import { Link } from "wouter"
 
-export default function HeroSection() {
+type HeroContent = {
+  eyebrow?: string
+  title?: string
+  intro?: string
+  values?: string[]
+}
+
+export default function HeroSection({ content }: { content?: HeroContent | null }) {
+  const titleLines = (content?.title ?? "Timeless Luxury\nRedefined").split("\n")
+  const values = content?.values?.length
+    ? content.values
+    : ["Handcrafted Excellence", "Timeless Design", "Sustainable Luxury"]
+
   return (
     <section className="relative h-screen w-full overflow-hidden">
       {/* Background Video */}
@@ -31,58 +44,60 @@ export default function HeroSection() {
           {/* Brand Tagline with Enhanced Animation */}
           <div className="mb-6 sm:mb-8 animate-fade-in-up">
             <span className="inline-block font-serif text-bibiere-gold text-base sm:text-lg md:text-xl font-medium tracking-[0.2em] uppercase drop-shadow-lg">
-              bibiere
+              {content?.eyebrow ?? "bibiere"}
             </span>
           </div>
 
           {/* Main Headline - Enhanced with bibiere brand voice and better mobile scaling */}
           <h1 className="font-serif text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl leading-[1.1] sm:leading-tight animate-fade-in-up animation-delay-200 drop-shadow-2xl">
-            Timeless Luxury
-            <br />
-            <span className="text-bibiere-gold">Redefined</span>
+            {titleLines[0]}
+            {titleLines.slice(1).map((line) => (
+              <span key={line} className="block text-bibiere-gold">{line}</span>
+            ))}
           </h1>
 
           {/* Subheading - Enhanced bibiere messaging with better mobile readability */}
           <p className="mx-auto mt-6 sm:mt-8 max-w-2xl lg:max-w-4xl font-sans text-base leading-relaxed text-white/95 sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-light animate-fade-in-up animation-delay-400 drop-shadow-lg">
-            Discover exquisite pieces that embody sophistication, crafted for the discerning individual who values artistry and elegance
+            {content?.intro ?? "Discover exquisite pieces that embody sophistication, crafted for the discerning individual who values artistry and elegance"}
           </p>
 
           {/* Call-to-Action Buttons - Enhanced design with better interactions */}
           <div className="mt-10 sm:mt-14 flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center animate-fade-in-up animation-delay-600">
             <Button
+              asChild
               size="lg"
               className="group bg-bibiere-burgundy hover:bg-bibiere-burgundy-dark text-white border-0 px-8 py-4 sm:px-12 sm:py-6 font-sans text-base sm:text-lg font-semibold transition-all duration-500 transform hover:scale-105 hover:shadow-2xl shadow-xl min-w-[220px] relative overflow-hidden"
             >
-              <span className="relative z-10">Explore Collection</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-bibiere-burgundy-dark to-bibiere-burgundy opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Link href="/collections">
+                <span className="relative z-10">Explore Collection</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-bibiere-burgundy-dark to-bibiere-burgundy opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </Link>
             </Button>
             <Button
+              asChild
               variant="outline"
               size="lg"
               className="group border-2 border-white/90 bg-white/10 backdrop-blur-sm hover:bg-white hover:text-bibiere-burgundy text-white px-8 py-4 sm:px-12 sm:py-6 font-sans text-base sm:text-lg font-semibold transition-all duration-500 transform hover:scale-105 hover:shadow-2xl min-w-[220px] relative overflow-hidden"
             >
-              <span className="relative z-10">View Lookbook</span>
-              <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Link href="/lookbook">
+                <span className="relative z-10">View Lookbook</span>
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </Link>
             </Button>
           </div>
 
           {/* Enhanced Brand Values with Better Mobile Layout */}
           <div className="mt-10 sm:mt-12 animate-fade-in-up animation-delay-800">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-white/85">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-bibiere-gold rounded-full" />
-                <span className="font-sans text-sm sm:text-base font-light tracking-wide">Handcrafted Excellence</span>
-              </div>
-              <div className="hidden sm:block w-px h-4 bg-white/30" />
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-bibiere-gold rounded-full" />
-                <span className="font-sans text-sm sm:text-base font-light tracking-wide">Timeless Design</span>
-              </div>
-              <div className="hidden sm:block w-px h-4 bg-white/30" />
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-bibiere-gold rounded-full" />
-                <span className="font-sans text-sm sm:text-base font-light tracking-wide">Sustainable Luxury</span>
-              </div>
+              {values.slice(0, 3).map((value, index) => (
+                <div key={value} className="contents">
+                  {index > 0 && <div className="hidden sm:block w-px h-4 bg-white/30" />}
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-bibiere-gold rounded-full" />
+                    <span className="font-sans text-sm sm:text-base font-light tracking-wide">{value}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

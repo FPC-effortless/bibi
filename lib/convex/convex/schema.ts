@@ -29,6 +29,11 @@ export default defineSchema({
     description: v.optional(v.string()),
     details: v.optional(v.string()),
     careInstructions: v.optional(v.string()),
+    sizes: v.optional(v.array(v.string())),
+    colors: v.optional(v.array(v.object({
+      name: v.string(),
+      value: v.string(),
+    }))),
     updatedAt: v.optional(v.number()),
   })
     .index("by_category", ["category"])
@@ -70,4 +75,19 @@ export default defineSchema({
     quantity: v.number(),
     image: v.optional(v.string()),
   }).index("by_order", ["orderId"]),
+
+  contentPages: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    eyebrow: v.string(),
+    intro: v.string(),
+    sections: v.array(v.object({
+      title: v.string(),
+      body: v.string(),
+    })),
+    status: v.string(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"]),
 });

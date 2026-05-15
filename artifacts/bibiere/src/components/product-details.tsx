@@ -1,13 +1,15 @@
 
-import { useState, useCallback } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Heart, ChevronDown, ChevronUp, Truck, Shield, RotateCcw, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SizeGuideModal } from "./size-guide-modal"
 import { toast } from "sonner"
+import { useCommerce } from "@/components/commerce-provider"
 
 interface ProductDetailsProps {
   product: {
+    id: string
     name: string
     price: number
     originalPrice?: number
@@ -25,6 +27,7 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
+  const { addProductToCart, toggleWishlist, wishlistProductIds } = useCommerce()
   const [selectedSize, setSelectedSize] = useState<string>("")
   const [selectedColor, setSelectedColor] = useState<string>(product.colors[0]?.name || "")
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
@@ -32,6 +35,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'description' | 'details' | 'care'>('description')
+
+  useEffect(() => {
+    setIsWishlisted(wishlistProductIds.has(product.id))
+  }, [product.id, wishlistProductIds])
 
   const handleAddToCart = useCallback(async () => {
     if (!selectedSize) {
@@ -47,20 +54,21 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     setIsAddingToCart(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1200))
+      await addProductToCart(product.id)
       toast.success("Added to cart successfully!")
     } catch (error) {
       toast.error("Failed to add to cart. Please try again.")
     } finally {
       setIsAddingToCart(false)
     }
-  }, [selectedSize, product.inStock])
+  }, [addProductToCart, selectedSize, product.id, product.inStock])
 
-  const handleWishlistToggle = useCallback(() => {
-    setIsWishlisted(!isWishlisted)
-    toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist")
-  }, [isWishlisted])
+  const handleWishlistToggle = useCallback(async () => {
+    const currentlyWishlisted = wishlistProductIds.has(product.id)
+    await toggleWishlist(product.id)
+    setIsWishlisted(!currentlyWishlisted)
+    toast.success(currentlyWishlisted ? "Removed from wishlist" : "Added to wishlist")
+  }, [product.id, toggleWishlist, wishlistProductIds])
 
   const isOnSale = product.originalPrice && product.originalPrice > product.price
   const discountPercentage = isOnSale 

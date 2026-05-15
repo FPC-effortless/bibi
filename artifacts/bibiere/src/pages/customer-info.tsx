@@ -1,5 +1,8 @@
 import { Link } from "wouter";
+import { useQuery } from "convex/react";
+import { api } from "../../../../lib/convex/convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { hasConvexConfig } from "@/lib/runtime-config";
 
 type InfoPageContent = {
   title: string;
@@ -8,7 +11,7 @@ type InfoPageContent = {
   sections: Array<{ title: string; body: string }>;
 };
 
-const pages: Record<string, InfoPageContent> = {
+const fallbackPages: Record<string, InfoPageContent> = {
   returns: {
     eyebrow: "Customer care",
     title: "Returns & Exchanges",
@@ -19,7 +22,7 @@ const pages: Record<string, InfoPageContent> = {
       { title: "Final sale", body: "Personalized, altered, and final-sale items cannot be returned unless they arrive damaged or incorrect." },
     ],
   },
-  trackOrder: {
+  "track-order": {
     eyebrow: "Customer care",
     title: "Track Your Order",
     intro: "Sign in to view your latest orders, payment status, and fulfillment progress.",
@@ -29,7 +32,7 @@ const pages: Record<string, InfoPageContent> = {
       { title: "Need help?", body: "If an order looks delayed or incomplete, contact customer care with your order reference." },
     ],
   },
-  sizeGuide: {
+  "size-guide": {
     eyebrow: "Fit guide",
     title: "Size Guide",
     intro: "Use these notes as a starting point for selecting refined, comfortable silhouettes.",
@@ -97,7 +100,47 @@ const pages: Record<string, InfoPageContent> = {
   },
 };
 
-function InfoPage({ page }: { page: InfoPageContent }) {
+function InfoPage({ slug }: { slug: string }) {
+  if (hasConvexConfig) {
+    return <BackendInfoPage slug={slug} />;
+  }
+
+  return <InfoPageContentView page={fallbackPages[slug]} />;
+}
+
+function BackendInfoPage({ slug }: { slug: string }) {
+  const backendPage = useQuery(api.contentPages.get, { slug });
+  const fallbackPage = fallbackPages[slug];
+  const page = backendPage ?? fallbackPage;
+
+  if (backendPage === undefined) {
+    return (
+      <main id="main-content" className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
+          Loading page...
+        </div>
+      </main>
+    );
+  }
+
+  return <InfoPageContentView page={page} />;
+}
+
+function InfoPageContentView({ page }: { page?: InfoPageContent | null }) {
+  if (!page) {
+    return (
+      <main id="main-content" className="min-h-screen bg-background">
+        <section className="container mx-auto px-4 py-16">
+          <h1 className="font-serif text-4xl font-semibold">Page unavailable</h1>
+          <p className="mt-3 max-w-2xl text-muted-foreground">
+            This customer page has not been published yet.
+          </p>
+          <Button asChild className="mt-6"><Link href="/">Return home</Link></Button>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main id="main-content" className="min-h-screen bg-background">
       <section className="border-b border-border bg-muted/30 py-16">
@@ -129,12 +172,12 @@ function InfoPage({ page }: { page: InfoPageContent }) {
   );
 }
 
-export function ReturnsPage() { return <InfoPage page={pages.returns} />; }
-export function TrackOrderPage() { return <InfoPage page={pages.trackOrder} />; }
-export function SizeGuidePage() { return <InfoPage page={pages.sizeGuide} />; }
-export function PrivacyPage() { return <InfoPage page={pages.privacy} />; }
-export function TermsPage() { return <InfoPage page={pages.terms} />; }
-export function HeritagePage() { return <InfoPage page={pages.heritage} />; }
-export function SustainabilityPage() { return <InfoPage page={pages.sustainability} />; }
-export function CareersPage() { return <InfoPage page={pages.careers} />; }
-export function PressPage() { return <InfoPage page={pages.press} />; }
+export function ReturnsPage() { return <InfoPage slug="returns" />; }
+export function TrackOrderPage() { return <InfoPage slug="track-order" />; }
+export function SizeGuidePage() { return <InfoPage slug="size-guide" />; }
+export function PrivacyPage() { return <InfoPage slug="privacy" />; }
+export function TermsPage() { return <InfoPage slug="terms" />; }
+export function HeritagePage() { return <InfoPage slug="heritage" />; }
+export function SustainabilityPage() { return <InfoPage slug="sustainability" />; }
+export function CareersPage() { return <InfoPage slug="careers" />; }
+export function PressPage() { return <InfoPage slug="press" />; }

@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import { useQuery } from "convex/react";
+import { api } from "../../../../lib/convex/convex/_generated/api";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MessageCircle, Phone, Mail } from "lucide-react";
+import { hasConvexConfig } from "@/lib/runtime-config";
 
 const faqCategories = [
   {
@@ -43,7 +46,8 @@ const faqCategories = [
 
 export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState("");
-
+  const backendPage = hasConvexConfig ? <BackendFaqContent searchQuery={searchQuery} onClear={() => setSearchQuery("")} /> : null;
+  const hasBackend = Boolean(backendPage);
   const filteredCategories = faqCategories
     .map((cat) => ({
       ...cat,
@@ -75,11 +79,104 @@ export default function FAQPage() {
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-10">
+        {hasBackend ? backendPage : (
+          <FaqFallbackContent
+            filteredCategories={filteredCategories}
+            searchQuery={searchQuery}
+            onClear={() => setSearchQuery("")}
+          />
+        )}
+
+        <div className="max-w-3xl mx-auto mt-16 border border-border rounded-xl p-8 text-center space-y-6">
+          <h2 className="text-2xl font-serif font-semibold">Still need help?</h2>
+          <p className="text-muted-foreground">Our customer service team is here for you</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/contact">
+                <MessageCircle className="w-4 h-4" />
+                Contact Us
+              </Link>
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <Mail className="w-4 h-4" />
+              hello@bibiere.com
+            </Button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function BackendFaqContent({ searchQuery, onClear }: { searchQuery: string; onClear: () => void }) {
+  const backendPage = useQuery(api.contentPages.get, { slug: "faq" });
+
+  const backendQuestions = backendPage?.sections.map((section) => ({
+    question: section.title,
+    answer: section.body,
+  })) ?? [];
+  const backendFilteredQuestions = backendQuestions.filter(
+    (q) =>
+      !searchQuery ||
+      q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      q.answer.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  if (backendPage === undefined) {
+    return <div className="py-12 text-center text-muted-foreground">Loading FAQ...</div>;
+  }
+
+  if (!backendPage) {
+    return (
+      <FaqFallbackContent
+        filteredCategories={faqCategories}
+        searchQuery={searchQuery}
+        onClear={onClear}
+      />
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-4">
+            <Accordion type="single" collapsible className="space-y-2">
+              {backendFilteredQuestions.map((faq, i) => (
+                <AccordionItem key={i} value={`faq-${i}`} className="border border-border rounded-lg px-4">
+                  <AccordionTrigger className="text-left font-medium hover:text-bibiere-burgundy">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+            {backendFilteredQuestions.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No results found for "{searchQuery}"</p>
+                <Button variant="outline" className="mt-4" onClick={onClear}>
+                  Clear Search
+                </Button>
+              </div>
+            )}
+          </div>
+  );
+}
+
+function FaqFallbackContent({
+  filteredCategories,
+  searchQuery,
+  onClear,
+}: {
+  filteredCategories: typeof faqCategories;
+  searchQuery: string;
+  onClear: () => void;
+}) {
+  return (
+    <div className="max-w-3xl mx-auto space-y-10">
           {filteredCategories.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No results found for "{searchQuery}"</p>
-              <Button variant="outline" className="mt-4" onClick={() => setSearchQuery("")}>
+              <Button variant="outline" className="mt-4" onClick={onClear}>
                 Clear Search
               </Button>
             </div>
@@ -103,24 +200,5 @@ export default function FAQPage() {
             ))
           )}
         </div>
-
-        <div className="max-w-3xl mx-auto mt-16 border border-border rounded-xl p-8 text-center space-y-6">
-          <h2 className="text-2xl font-serif font-semibold">Still need help?</h2>
-          <p className="text-muted-foreground">Our customer service team is here for you</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button variant="outline" className="gap-2" asChild>
-              <Link href="/contact">
-                <MessageCircle className="w-4 h-4" />
-                Contact Us
-              </Link>
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Mail className="w-4 h-4" />
-              hello@bibiere.com
-            </Button>
-          </div>
-        </div>
-      </main>
-    </div>
   );
 }

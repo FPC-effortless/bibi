@@ -4,68 +4,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
-
-const mockCartItems = [
-  {
-    id: "1",
-    name: "Elegant Silk Evening Dress",
-    price: 1299,
-    originalPrice: 1599,
-    size: "M",
-    color: "Midnight Black",
-    quantity: 1,
-    image: "/elegant-black-silk-dress.png",
-    inStock: true,
-    stockCount: 8,
-  },
-  {
-    id: "2",
-    name: "Cashmere Blend Coat",
-    price: 899,
-    originalPrice: null,
-    size: "L",
-    color: "Camel",
-    quantity: 2,
-    image: "/cozy-wool-coat.png",
-    inStock: true,
-    stockCount: 3,
-  },
-];
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, Lock } from "lucide-react";
+import { useCommerce } from "@/components/commerce-provider";
+import { CartItem } from "@/types";
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(mockCartItems);
+  const { cart, updateCartQuantity } = useCommerce();
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      setCartItems((items) => items.filter((item) => item.id !== id));
-    } else {
-      setCartItems((items) =>
-        items.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item))
-      );
-    }
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+  const updateQuantity = async (item: CartItem, newQuantity: number) => {
+    await updateCartQuantity(item.productId, newQuantity);
   };
 
   const applyPromoCode = () => {
-    if (promoCode.toLowerCase() === "welcome10") {
+    if (promoCode.trim().toLowerCase() === "welcome10") {
       setAppliedPromo("WELCOME10");
       setPromoCode("");
     }
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
   const discount = appliedPromo ? subtotal * 0.1 : 0;
-  const shipping = subtotal > 500 ? 0 : 25;
+  const shipping = subtotal > 500 || subtotal === 0 ? 0 : 25;
   const tax = (subtotal - discount) * 0.08;
   const total = subtotal - discount + shipping + tax;
 
-  if (cartItems.length === 0) {
+  if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12">
@@ -99,37 +64,35 @@ export default function CartPage() {
           </Button>
           <h1 className="text-3xl font-serif font-bold">Shopping Cart</h1>
           <p className="text-muted-foreground mt-2">
-            {cartItems.length} {cartItems.length === 1 ? "item" : "items"} in your cart
+            {cart.length} {cart.length === 1 ? "item" : "items"} in your cart
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-6">
-            {cartItems.map((item) => (
-              <div key={item.id} className="border border-border rounded-lg p-6">
+            {cart.map((item: CartItem) => (
+              <div key={(item as any)._id ?? (item as any).id ?? item.productId} className="border border-border rounded-lg p-6">
                 <div className="flex gap-6">
-                  <div className="w-24 h-32 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
-                    <p className="text-xs text-muted-foreground text-center">Image</p>
-                  </div>
+                  <Link href={`/product/${item.productId}`} className="w-24 h-32 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                    <img src={item.image || "/placeholder.svg"} alt={item.name} className="h-full w-full object-cover" />
+                  </Link>
                   <div className="flex-1 space-y-4">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-serif font-semibold text-lg">{item.name}</h3>
-                        <div className="flex gap-4 text-sm text-muted-foreground mt-1">
-                          <span>Size: {item.size}</span>
-                          <span>Color: {item.color}</span>
-                        </div>
-                        {item.stockCount <= 5 && (
+                        {item.brand && <p className="text-sm text-muted-foreground mt-1">{item.brand}</p>}
+                        {item.quantity >= 5 && (
                           <Badge variant="secondary" className="mt-2">
-                            Only {item.stockCount} left
+                            Quantity {item.quantity}
                           </Badge>
                         )}
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => updateQuantity(item, 0)}
                         className="text-muted-foreground hover:text-destructive"
+                        aria-label={`Remove ${item.name}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -140,7 +103,8 @@ export default function CartPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item, item.quantity - 1)}
+                          aria-label={`Decrease ${item.name} quantity`}
                         >
                           <Minus className="w-3 h-3" />
                         </Button>
@@ -148,19 +112,17 @@ export default function CartPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          disabled={item.quantity >= item.stockCount}
+                          onClick={() => updateQuantity(item, item.quantity + 1)}
+                          aria-label={`Increase ${item.name} quantity`}
                         >
                           <Plus className="w-3 h-3" />
                         </Button>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">${item.price}</div>
-                        {item.originalPrice && (
-                          <div className="text-sm text-muted-foreground line-through">
-                            ${item.originalPrice}
-                          </div>
-                        )}
+                        <div className="font-semibold">${item.price.toLocaleString()}</div>
+                        <div className="text-sm text-muted-foreground">
+                          ${(item.price * item.quantity).toLocaleString()} total
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -208,7 +170,7 @@ export default function CartPage() {
               <h3 className="font-semibold">Promo Code</h3>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Enter code (try WELCOME10)"
+                  placeholder="Enter code"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && applyPromoCode()}
@@ -218,7 +180,7 @@ export default function CartPage() {
                 </Button>
               </div>
               {appliedPromo && (
-                <div className="text-sm text-green-600">✓ {appliedPromo} applied (10% off)</div>
+                <div className="text-sm text-green-600">{appliedPromo} applied (10% off)</div>
               )}
             </div>
 
@@ -226,8 +188,9 @@ export default function CartPage() {
               <Link href="/checkout">Proceed to Checkout</Link>
             </Button>
 
-            <div className="text-xs text-muted-foreground text-center">
-              🔒 Secure checkout with SSL encryption
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <Lock className="h-3 w-3" />
+              Secure checkout with SSL encryption
             </div>
           </div>
         </div>

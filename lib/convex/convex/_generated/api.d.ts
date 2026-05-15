@@ -10,6 +10,7 @@
 
 import type * as adminAuth from "../adminAuth.js";
 import type * as cart from "../cart.js";
+import type * as contentPages from "../contentPages.js";
 import type * as payments from "../payments.js";
 import type * as products from "../products.js";
 import type * as users from "../users.js";
@@ -24,6 +25,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   adminAuth: typeof adminAuth;
   cart: typeof cart;
+  contentPages: typeof contentPages;
   payments: typeof payments;
   products: typeof products;
   users: typeof users;
