@@ -104,6 +104,7 @@ export const initializePayment = action({
   args: {
     email: v.string(),
     currency: v.optional(v.string()),
+    callbackUrl: v.optional(v.string()),
     metadata: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
@@ -121,11 +122,20 @@ export const initializePayment = action({
     const orderId: string = (await ctx.runMutation(internal.payments.createOrderInternal, {
       totalAmount,
       currency: args.currency ?? "NGN",
+      customerName: args.metadata?.customerName,
+      customerEmail: args.email,
+      phone: args.metadata?.phone,
+      shippingAddress: args.metadata?.shipping,
+      measurements: args.metadata?.measurements,
+      productionNotes: args.metadata?.productionNotes,
+      eventDate: args.metadata?.eventDate,
       items: (cartItems as any[]).map((item: any) => ({
         productId: item.productId,
         name: item.name,
         price: item.price,
         quantity: item.quantity,
+        size: item.size,
+        color: item.color,
         image: item.image,
       })),
     })) as string;
@@ -140,7 +150,9 @@ export const initializePayment = action({
         status: true,
         message: "Mock payment initialized",
         data: {
-          authorization_url: `/checkout?order=${orderId}&mock=true`,
+          authorization_url: args.callbackUrl
+            ? `${args.callbackUrl}?reference=${orderId}&id=${orderId}&mock=true`
+            : `/order-confirmed?reference=${orderId}&id=${orderId}&mock=true`,
           reference: orderId,
         },
         orderId,
@@ -158,6 +170,7 @@ export const initializePayment = action({
         amount: amountInKobo,
         currency: args.currency ?? "NGN",
         reference: orderId,
+        callback_url: args.callbackUrl,
         metadata: { orderId, ...args.metadata },
       }),
     });
@@ -221,11 +234,20 @@ export const createOrderInternal = internalMutation({
   args: {
     totalAmount: v.number(),
     currency: v.string(),
+    customerName: v.optional(v.string()),
+    customerEmail: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    shippingAddress: v.optional(v.string()),
+    measurements: v.optional(v.string()),
+    productionNotes: v.optional(v.string()),
+    eventDate: v.optional(v.string()),
     items: v.array(v.object({
         productId: v.string(),
         name: v.string(),
         price: v.number(),
         quantity: v.number(),
+        size: v.optional(v.string()),
+        color: v.optional(v.string()),
         image: v.optional(v.string()),
     })),
   },
@@ -237,6 +259,13 @@ export const createOrderInternal = internalMutation({
       status: "pending",
       totalAmount: args.totalAmount,
       currency: args.currency,
+      customerName: args.customerName,
+      customerEmail: args.customerEmail,
+      phone: args.phone,
+      shippingAddress: args.shippingAddress,
+      measurements: args.measurements,
+      productionNotes: args.productionNotes,
+      eventDate: args.eventDate,
       updatedAt: Date.now(),
     });
     for (const item of args.items) {
@@ -262,7 +291,18 @@ export const fulfillOrderInternal = internalMutation({
     )).unique();
     if (!order) return;
     await ctx.db.patch(order._id, { status: "paid", paystackStatus: "success" });
-    const items = await ctx.db.query("cartItems").withIndex("by_user", (q) => q.eq("userId", order.userId)).collect();
-    for (const item of items) await ctx.db.delete(item._id);
+    const orderItems = await ctx.db
+      .query("orderItems")
+      .withIndex("by_order", (q) => q.eq("orderId", order._id))
+      .collect();
+    const cartItems = await ctx.db.query("cartItems").withIndex("by_user", (q) => q.eq("userId", order.userId)).collect();
+    for (const item of cartItems) {
+      const fulfilled = orderItems.some((orderItem) =>
+        orderItem.productId === item.productId &&
+        orderItem.size === item.size &&
+        orderItem.color === item.color
+      );
+      if (fulfilled) await ctx.db.delete(item._id);
+    }
   }
 });

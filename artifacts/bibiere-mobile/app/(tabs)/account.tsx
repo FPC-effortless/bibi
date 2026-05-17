@@ -118,7 +118,7 @@ export default function AccountScreen() {
           Timeless Luxury Fashion
         </Text>
         <TouchableOpacity onPress={() => openWeb("/")}>
-          <Text style={[styles.footerLink, { color: colors.gold }]}>Visit our website →</Text>
+          <Text style={[styles.footerLink, { color: colors.gold }]}>{"Visit our website ->"}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

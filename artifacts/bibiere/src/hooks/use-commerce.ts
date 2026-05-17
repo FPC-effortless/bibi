@@ -28,9 +28,12 @@ function useConvexCommerce() {
   }, [isLoaded, user, storeUser])
 
   // Convex Queries (Reactive!)
-  const products = useQuery(api.products.list) ?? []
-  const cart = useQuery(api.cart.get) ?? []
-  const wishlist = useQuery(api.wishlist.get) ?? []
+  const productsQuery = useQuery(api.products.list)
+  const cartQuery = useQuery(api.cart.get)
+  const wishlistQuery = useQuery(api.wishlist.get)
+  const products = productsQuery ?? []
+  const cart = cartQuery ?? []
+  const wishlist = wishlistQuery ?? []
   
   // Convex Mutations
   const addCartMutation = useMutation(api.cart.add)
@@ -41,12 +44,12 @@ function useConvexCommerce() {
     await toggleWishlistMutation({ productId })
   }, [toggleWishlistMutation])
 
-  const addProductToCart = useCallback(async (productId: string) => {
-    await addCartMutation({ productId })
+  const addProductToCart = useCallback(async (productId: string, options?: { size?: string; color?: string }) => {
+    await addCartMutation({ productId, size: options?.size, color: options?.color })
   }, [addCartMutation])
 
-  const updateCartQuantity = useCallback(async (productId: string, quantity: number) => {
-    await updateCartMutation({ productId, quantity })
+  const updateCartQuantity = useCallback(async (cartItemId: string, quantity: number) => {
+    await updateCartMutation({ cartItemId: cartItemId as any, quantity })
   }, [updateCartMutation])
 
   const wishlistProductIds = useMemo(() => new Set(wishlist.map((item: WishlistItem) => item.productId)), [wishlist])
@@ -57,7 +60,7 @@ function useConvexCommerce() {
     return { cartCount, wishlistCount }
   }, [cart, wishlist])
 
-  const loading = products.length === 0 // Simple loading state
+  const loading = productsQuery === undefined
 
   return {
     products,
@@ -105,14 +108,14 @@ function useFallbackCommerce(): CommerceState {
     })
   }, [products])
 
-  const addProductToCart = useCallback(async (productId: string) => {
+  const addProductToCart = useCallback(async (productId: string, options?: { size?: string; color?: string }) => {
     const product = products.find((item) => item.id === productId)
     if (!product) {
       return
     }
 
     setCart((current) => {
-      const existing = current.find((item) => item.productId === productId)
+      const existing = current.find((item) => item.productId === productId && item.size === options?.size && item.color === options?.color)
       if (existing) {
         return current.map((item) =>
           item.productId === productId
@@ -129,6 +132,8 @@ function useFallbackCommerce(): CommerceState {
           name: product.name,
           price: product.price,
           quantity: 1,
+          size: options?.size,
+          color: options?.color,
           image: product.primaryImage,
           maxQuantity: 5,
           brand: product.brand,
@@ -137,14 +142,14 @@ function useFallbackCommerce(): CommerceState {
     })
   }, [products])
 
-  const updateCartQuantity = useCallback(async (productId: string, quantity: number) => {
+  const updateCartQuantity = useCallback(async (cartItemId: string, quantity: number) => {
     setCart((current) => {
       if (quantity <= 0) {
-        return current.filter((item) => item.productId !== productId)
+        return current.filter((item) => item.id !== cartItemId)
       }
 
       return current.map((item) =>
-        item.productId === productId ? { ...item, quantity } : item,
+        item.id === cartItemId ? { ...item, quantity } : item,
       )
     })
   }, [])

@@ -14,6 +14,8 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { useCommerce, WishlistItem } from "@/contexts/CommerceContext";
 
+const formatNaira = (value: number) => `₦${value.toLocaleString("en-NG")}`;
+
 function WishlistCard({ item, onRemove, onAddToCart }: {
   item: WishlistItem;
   onRemove: () => void;
@@ -28,15 +30,15 @@ function WishlistCard({ item, onRemove, onAddToCart }: {
           {item.name}
         </Text>
         <View style={styles.priceRow}>
-          <Text style={[styles.price, { color: colors.burgundy }]}>${item.price}</Text>
+          <Text style={[styles.price, { color: colors.burgundy }]}>{formatNaira(item.price)}</Text>
           {item.originalPrice && (
             <Text style={[styles.origPrice, { color: colors.mutedForeground }]}>
-              ${item.originalPrice}
+              {formatNaira(item.originalPrice)}
             </Text>
           )}
         </View>
         {!item.inStock && (
-          <Text style={[styles.outOfStock, { color: colors.mutedForeground }]}>Out of stock</Text>
+          <Text style={[styles.outOfStock, { color: colors.mutedForeground }]}>Unavailable</Text>
         )}
         <View style={styles.actions}>
           <TouchableOpacity
@@ -49,7 +51,7 @@ function WishlistCard({ item, onRemove, onAddToCart }: {
           >
             <Feather name="shopping-bag" size={14} color={item.inStock ? "#fff" : colors.mutedForeground} />
             <Text style={[styles.addBtnText, { color: item.inStock ? "#fff" : colors.mutedForeground }]}>
-              Add to Cart
+              Choose Details
             </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.removeBtn} onPress={onRemove}>

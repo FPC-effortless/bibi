@@ -60,6 +60,8 @@ export const add = mutation({
       .query("cartItems")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("productId"), args.productId))
+      .filter((q) => q.eq(q.field("size"), args.size))
+      .filter((q) => q.eq(q.field("color"), args.color))
       .unique();
 
     if (existing) {
@@ -78,20 +80,15 @@ export const add = mutation({
 
 export const update = mutation({
   args: {
-    productId: v.string(),
+    cartItemId: v.id("cartItems"),
     quantity: v.number(),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) throw new Error("Not authenticated");
 
-    const existing = await ctx.db
-      .query("cartItems")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("productId"), args.productId))
-      .unique();
-
-    if (!existing) return;
+    const existing = await ctx.db.get(args.cartItemId);
+    if (!existing || existing.userId !== user._id) return;
 
     if (args.quantity <= 0) {
       await ctx.db.delete(existing._id);
@@ -102,19 +99,14 @@ export const update = mutation({
 });
 
 export const remove = mutation({
-  args: { productId: v.string() },
+  args: { cartItemId: v.id("cartItems") },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) throw new Error("Not authenticated");
 
-    const existing = await ctx.db
-      .query("cartItems")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("productId"), args.productId))
-      .unique();
-
-    if (existing) {
-      await ctx.db.delete(existing._id);
+    const existing = await ctx.db.get(args.cartItemId);
+    if (existing && existing.userId === user._id) {
+      await ctx.db.delete(args.cartItemId);
     }
   },
 });

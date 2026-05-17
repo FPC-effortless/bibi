@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, useClerk, useAuth } from "@clerk/react";
@@ -23,33 +23,32 @@ import {
 
 const convex = hasConvexConfig ? new ConvexReactClient(convexUrl) : null;
 
-import HomePage from "@/pages/home";
-import CollectionsPage from "@/pages/collections";
-import CollectionDetailPage from "@/pages/collection-detail";
-import ProductPage from "@/pages/product";
-import AboutPage from "@/pages/about";
-import LookbookPage from "@/pages/lookbook";
-import CartPage from "@/pages/cart";
-import WishlistPage from "@/pages/wishlist";
-import CheckoutPage from "@/pages/checkout";
-import AccountPage from "@/pages/account";
-import SearchPage from "@/pages/search";
-import FAQPage from "@/pages/faq";
-import ContactPage from "@/pages/contact";
-import AdminPage from "@/pages/admin";
-import OrderConfirmedPage from "@/pages/order-confirmed";
-import {
-  CareersPage,
-  HeritagePage,
-  PressPage,
-  PrivacyPage,
-  ReturnsPage,
-  SizeGuidePage,
-  SustainabilityPage,
-  TermsPage,
-  TrackOrderPage,
-} from "@/pages/customer-info";
-import NotFound from "@/pages/not-found";
+const HomePage = lazy(() => import("@/pages/home"));
+const CollectionsPage = lazy(() => import("@/pages/collections"));
+const CollectionDetailPage = lazy(() => import("@/pages/collection-detail"));
+const ProductPage = lazy(() => import("@/pages/product"));
+const AboutPage = lazy(() => import("@/pages/about"));
+const LookbookPage = lazy(() => import("@/pages/lookbook"));
+const CartPage = lazy(() => import("@/pages/cart"));
+const WishlistPage = lazy(() => import("@/pages/wishlist"));
+const CheckoutPage = lazy(() => import("@/pages/checkout"));
+const AccountPage = lazy(() => import("@/pages/account"));
+const SearchPage = lazy(() => import("@/pages/search"));
+const FAQPage = lazy(() => import("@/pages/faq"));
+const ContactPage = lazy(() => import("@/pages/contact"));
+const AdminPage = lazy(() => import("@/pages/admin"));
+const OrderConfirmedPage = lazy(() => import("@/pages/order-confirmed"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+
+const ReturnsPage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.ReturnsPage })));
+const TrackOrderPage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.TrackOrderPage })));
+const SizeGuidePage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.SizeGuidePage })));
+const PrivacyPage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.PrivacyPage })));
+const TermsPage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.TermsPage })));
+const HeritagePage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.HeritagePage })));
+const SustainabilityPage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.SustainabilityPage })));
+const CareersPage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.CareersPage })));
+const PressPage = lazy(() => import("@/pages/customer-info").then((module) => ({ default: module.PressPage })));
 
 const queryClient = new QueryClient();
 
@@ -72,7 +71,7 @@ function MissingConfigurationPage() {
           bibiere needs one Vercel environment variable
         </h1>
         <p className="mb-6 text-muted-foreground">
-          Add <code className="rounded bg-muted px-1.5 py-0.5">VITE_CLERK_PUBLISHABLE_KEY</code> to the Vercel project and redeploy. The app now falls back to a static catalog when Convex is not configured, but Clerk still needs its public browser key before auth-aware pages can render.
+          Add <code className="rounded bg-muted px-1.5 py-0.5">VITE_CLERK_PUBLISHABLE_KEY</code> to the Vercel project and redeploy. Clerk needs its public browser key before auth-aware pages can render.
         </p>
         <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
           Optional backend variable:{" "}
@@ -167,40 +166,52 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+function RouteLoadingFallback() {
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
+        Loading...
+      </div>
+    </main>
+  );
+}
+
 function AppRoutes() {
   return (
     <ErrorBoundary>
       <CommerceProvider>
         <Header />
-        <Switch>
-          <Route path="/" component={HomePage} />
-          <Route path="/sign-in/*?" component={SignInPage} />
-          <Route path="/sign-up/*?" component={SignUpPage} />
-          <Route path="/collections" component={CollectionsPage} />
-          <Route path="/collections/:slug" component={CollectionDetailPage} />
-          <Route path="/product/:id" component={ProductPage} />
-          <Route path="/about" component={AboutPage} />
-          <Route path="/lookbook" component={LookbookPage} />
-          <Route path="/cart" component={CartPage} />
-          <Route path="/wishlist" component={WishlistPage} />
-          <Route path="/checkout" component={CheckoutPage} />
-          <Route path="/order-confirmed" component={OrderConfirmedPage} />
-          <Route path="/account" component={AccountPage} />
-          <Route path="/search" component={SearchPage} />
-          <Route path="/faq" component={FAQPage} />
-          <Route path="/contact" component={ContactPage} />
-          <Route path="/returns" component={ReturnsPage} />
-          <Route path="/track-order" component={TrackOrderPage} />
-          <Route path="/size-guide" component={SizeGuidePage} />
-          <Route path="/privacy" component={PrivacyPage} />
-          <Route path="/terms" component={TermsPage} />
-          <Route path="/heritage" component={HeritagePage} />
-          <Route path="/sustainability" component={SustainabilityPage} />
-          <Route path="/careers" component={CareersPage} />
-          <Route path="/press" component={PressPage} />
-          <Route path="/admin" component={AdminPage} />
-          <Route component={NotFound} />
-        </Switch>
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <Switch>
+            <Route path="/" component={HomePage} />
+            <Route path="/sign-in/*?" component={SignInPage} />
+            <Route path="/sign-up/*?" component={SignUpPage} />
+            <Route path="/collections" component={CollectionsPage} />
+            <Route path="/collections/:slug" component={CollectionDetailPage} />
+            <Route path="/product/:id" component={ProductPage} />
+            <Route path="/about" component={AboutPage} />
+            <Route path="/lookbook" component={LookbookPage} />
+            <Route path="/cart" component={CartPage} />
+            <Route path="/wishlist" component={WishlistPage} />
+            <Route path="/checkout" component={CheckoutPage} />
+            <Route path="/order-confirmed" component={OrderConfirmedPage} />
+            <Route path="/account" component={AccountPage} />
+            <Route path="/search" component={SearchPage} />
+            <Route path="/faq" component={FAQPage} />
+            <Route path="/contact" component={ContactPage} />
+            <Route path="/returns" component={ReturnsPage} />
+            <Route path="/track-order" component={TrackOrderPage} />
+            <Route path="/size-guide" component={SizeGuidePage} />
+            <Route path="/privacy" component={PrivacyPage} />
+            <Route path="/terms" component={TermsPage} />
+            <Route path="/heritage" component={HeritagePage} />
+            <Route path="/sustainability" component={SustainabilityPage} />
+            <Route path="/careers" component={CareersPage} />
+            <Route path="/press" component={PressPage} />
+            <Route path="/admin" component={AdminPage} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
         <Footer />
         <CookieConsentBanner />
       </CommerceProvider>

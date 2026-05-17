@@ -7,7 +7,6 @@ import ProductDetails from "@/components/product-details";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { hasConvexConfig } from "@/lib/runtime-config";
-import { fallbackCommerceData } from "@/lib/commerce-data";
 
 function splitList(value?: string) {
   return value?.split("\n").map((item) => item.trim()).filter(Boolean) ?? [];
@@ -44,8 +43,7 @@ export default function ProductPage() {
   const productId = params.id || "";
 
   if (!hasConvexConfig) {
-    const fallbackProduct = fallbackCommerceData.products.find((product) => product.id === productId);
-    return <ProductPageView product={fallbackProduct ? toDetailProduct(fallbackProduct) : null} loading={false} />;
+    return <ProductPageView product={null} loading={false} />;
   }
 
   return <BackendProductPage productId={productId} />;
@@ -53,10 +51,9 @@ export default function ProductPage() {
 
 function BackendProductPage({ productId }: { productId: string }) {
   const backendProduct = useQuery(api.products.get, productId ? { id: productId } : "skip");
-  const fallbackProduct = fallbackCommerceData.products.find((product) => product.id === productId);
   const product = useMemo(
-    () => backendProduct ? toDetailProduct(backendProduct) : fallbackProduct ? toDetailProduct(fallbackProduct) : null,
-    [backendProduct, fallbackProduct],
+    () => backendProduct ? toDetailProduct(backendProduct) : null,
+    [backendProduct],
   );
 
   return <ProductPageView product={product} loading={backendProduct === undefined} />;

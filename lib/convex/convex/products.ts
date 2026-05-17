@@ -232,7 +232,7 @@ export const adminSetInventory = mutation({
     await requireAdmin(ctx);
     await ctx.db.patch(args.productId, {
       inventoryCount: args.inventoryCount,
-      inStock: args.inStock ?? args.inventoryCount > 0,
+      ...(args.inStock === undefined ? {} : { inStock: args.inStock }),
       updatedAt: Date.now(),
     });
   },
@@ -253,117 +253,39 @@ export const seed = mutation({
   args: {},
   handler: async (ctx) => {
     await requireAdmin(ctx);
-    const existing = await ctx.db.query("products").first();
-    if (existing) return;
+    throw new Error("Demo product seeding is disabled. Create real products from /admin.");
+  },
+});
 
-    const products = [
-      {
-        id: "1",
-        name: "Elegant Black Silk Dress",
-        price: 299,
-        originalPrice: 399,
-        primaryImage: "/elegant-black-silk-dress.png",
-        hoverImage: "/elegant-black-silk-dress-back.png",
-        category: "Dresses",
-        featured: true,
-        inStock: true,
-        status: "active",
-        slug: "elegant-black-silk-dress",
-        inventoryCount: 12,
-        sortOrder: 10,
-        brand: "bibiere",
-        sizes: ["XS", "S", "M", "L", "XL"],
-        colors: [{ name: "Black", value: "#111827" }],
-      },
-      {
-        id: "2",
-        name: "Cozy Wool Coat",
-        price: 599,
-        primaryImage: "/cozy-wool-coat.png",
-        hoverImage: "/luxury-cashmere-texture.png",
-        category: "Outerwear",
-        featured: false,
-        inStock: false,
-        status: "active",
-        slug: "cozy-wool-coat",
-        inventoryCount: 0,
-        sortOrder: 20,
-        brand: "bibiere",
-        sizes: ["S", "M", "L"],
-        colors: [{ name: "Camel", value: "#b08968" }],
-      },
-      {
-        id: "3",
-        name: "Luxury Quilted Handbag",
-        price: 449,
-        primaryImage: "/luxury-quilted-handbag.png",
-        hoverImage: "/designer-handbag-interior.png",
-        category: "Accessories",
-        featured: true,
-        inStock: true,
-        status: "active",
-        slug: "luxury-quilted-handbag",
-        inventoryCount: 8,
-        sortOrder: 30,
-        brand: "bibiere",
-        sizes: ["One Size"],
-        colors: [{ name: "Black", value: "#111827" }],
-      },
-      {
-        id: "4",
-        name: "Premium Tailored Blazer",
-        price: 399,
-        primaryImage: "/premium-tailored-blazer.png",
-        hoverImage: "/premium-blazer-fabric.png",
-        category: "Blazers",
-        featured: false,
-        inStock: true,
-        status: "active",
-        slug: "premium-tailored-blazer",
-        inventoryCount: 10,
-        sortOrder: 40,
-        brand: "bibiere",
-        sizes: ["XS", "S", "M", "L", "XL"],
-        colors: [{ name: "Navy", value: "#1f2a44" }],
-      },
-      {
-        id: "5",
-        name: "Cashmere Scarf",
-        price: 149,
-        primaryImage: "/cashmere-scarf.png",
-        hoverImage: "/luxury-cashmere-texture.png",
-        category: "Accessories",
-        featured: false,
-        inStock: true,
-        status: "active",
-        slug: "cashmere-scarf",
-        inventoryCount: 18,
-        sortOrder: 50,
-        brand: "bibiere",
-        sizes: ["One Size"],
-        colors: [{ name: "Oat", value: "#d8cab8" }],
-      },
-      {
-        id: "6",
-        name: "Luxury Wristwatch",
-        price: 899,
-        primaryImage: "/luxury-wristwatch.png",
-        hoverImage: "/luxury-wristwatch.png",
-        category: "Accessories",
-        featured: true,
-        inStock: true,
-        status: "active",
-        slug: "luxury-wristwatch",
-        inventoryCount: 6,
-        sortOrder: 60,
-        brand: "bibiere",
-        sizes: ["One Size"],
-        colors: [{ name: "Gold", value: "#c7a34f" }],
-      },
-    ];
+export const adminArchiveSeedProducts = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const seedIds = new Set(["1", "2", "3", "4", "5", "6"]);
+    const products = await ctx.db.query("products").collect();
+    let archived = 0;
 
-    for (const p of products) {
-      await ctx.db.insert("products", p);
+    for (const product of products) {
+      const seeded =
+        seedIds.has(product.id) ||
+        product.primaryImage.includes("/elegant-black-silk-dress") ||
+        product.primaryImage.includes("/cozy-wool-coat") ||
+        product.primaryImage.includes("/luxury-quilted-handbag") ||
+        product.primaryImage.includes("/premium-tailored-blazer") ||
+        product.primaryImage.includes("/cashmere-scarf") ||
+        product.primaryImage.includes("/luxury-wristwatch");
+
+      if (seeded) {
+        await ctx.db.patch(product._id, {
+          status: "archived",
+          featured: false,
+          inStock: false,
+          updatedAt: Date.now(),
+        });
+        archived += 1;
+      }
     }
+
+    return { archived };
   },
 });

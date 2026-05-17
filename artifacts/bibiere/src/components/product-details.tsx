@@ -1,11 +1,12 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Heart, ChevronDown, ChevronUp, Truck, Shield, RotateCcw, Star } from "lucide-react"
+import { Heart, Truck, Shield, RotateCcw, Star, Ruler, Scissors } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SizeGuideModal } from "./size-guide-modal"
 import { toast } from "sonner"
 import { useCommerce } from "@/components/commerce-provider"
+import { formatStoreCurrency } from "@/lib/currency-manager"
 
 interface ProductDetailsProps {
   product: {
@@ -47,21 +48,21 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     }
 
     if (!product.inStock) {
-      toast.error("This item is currently out of stock")
+      toast.error("This item is not available for new made-to-order requests")
       return
     }
 
     setIsAddingToCart(true)
 
     try {
-      await addProductToCart(product.id)
+      await addProductToCart(product.id, { size: selectedSize, color: selectedColor })
       toast.success("Added to cart successfully!")
     } catch (error) {
       toast.error("Failed to add to cart. Please try again.")
     } finally {
       setIsAddingToCart(false)
     }
-  }, [addProductToCart, selectedSize, product.id, product.inStock])
+  }, [addProductToCart, selectedColor, selectedSize, product.id, product.inStock])
 
   const handleWishlistToggle = useCallback(async () => {
     const currentlyWishlisted = wishlistProductIds.has(product.id)
@@ -111,12 +112,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         <div className="flex items-center gap-4">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-semibold text-bibiere-burgundy">
-              ${product.price.toLocaleString()}
+              {formatStoreCurrency(product.price)}
             </span>
             {isOnSale && (
               <>
                 <span className="text-xl text-muted-foreground line-through">
-                  ${product.originalPrice!.toLocaleString()}
+                  {formatStoreCurrency(product.originalPrice!)}
                 </span>
                 <span className="px-2 py-1 bg-bibiere-burgundy text-white text-sm font-medium rounded-md">
                   -{discountPercentage}%
@@ -126,7 +127,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         </div>
 
-        {/* Stock Status */}
+        {/* Availability Status */}
         <div className="flex items-center gap-2">
           <div className={cn(
             "w-2 h-2 rounded-full",
@@ -137,10 +138,27 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             product.inStock !== false ? "text-green-700" : "text-red-700"
           )}>
             {product.inStock !== false 
-              ? `In Stock${product.stockCount ? ` (${product.stockCount} available)` : ''}`
-              : 'Out of Stock'
+              ? "Made to order"
+              : "Unavailable"
             }
           </span>
+        </div>
+
+        <div className="grid gap-3 rounded-lg border border-border bg-card p-4 text-sm sm:grid-cols-2">
+          <div className="flex items-start gap-3">
+            <Scissors className="mt-0.5 h-5 w-5 text-bibiere-burgundy" />
+            <div>
+              <p className="font-medium text-foreground">Production starts after payment</p>
+              <p className="mt-1 text-muted-foreground">Each piece is cut and finished for your order.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Ruler className="mt-0.5 h-5 w-5 text-bibiere-gold" />
+            <div>
+              <p className="font-medium text-foreground">Measurements collected at checkout</p>
+              <p className="mt-1 text-muted-foreground">Add bust, waist, hips, height, and fit notes before payment.</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -305,11 +323,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 Adding to Cart...
               </div>
             ) : product.inStock === false ? (
-              "Out of Stock"
+              "Unavailable"
             ) : !selectedSize ? (
               "Select a Size"
             ) : (
-              "Add to Cart"
+              "Add Made-to-Order Piece"
             )}
           </Button>
 
@@ -344,8 +362,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <Truck className="w-5 h-5 text-bibiere-burgundy" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Free Shipping</p>
-              <p className="text-muted-foreground">On orders over $200</p>
+              <p className="font-medium text-foreground">Tailored Production</p>
+              <p className="text-muted-foreground">Made after order</p>
             </div>
           </div>
           
@@ -354,8 +372,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <RotateCcw className="w-5 h-5 text-bibiere-gold" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Easy Returns</p>
-              <p className="text-muted-foreground">30-day return policy</p>
+              <p className="font-medium text-foreground">Fit Notes</p>
+              <p className="text-muted-foreground">Reviewed before sewing</p>
             </div>
           </div>
           
@@ -364,8 +382,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <Shield className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Authenticity</p>
-              <p className="text-muted-foreground">100% guaranteed</p>
+              <p className="font-medium text-foreground">Secure Payment</p>
+              <p className="text-muted-foreground">Protected checkout</p>
             </div>
           </div>
         </div>

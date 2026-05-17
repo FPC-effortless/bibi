@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { useCommerce } from "@/components/commerce-provider";
+import { formatStoreCurrency } from "@/lib/currency-manager";
 
 const sortOptions = [
   { value: "relevance", label: "Relevance" },
@@ -130,9 +131,9 @@ export default function SearchPage() {
                   </h3>
                   <p className="text-sm text-muted-foreground">{product.category} · {product.brand}</p>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">${product.price}</span>
+                    <span className="font-semibold">{formatStoreCurrency(product.price)}</span>
                     {product.originalPrice && (
-                      <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
+                      <span className="text-sm text-muted-foreground line-through">{formatStoreCurrency(product.originalPrice)}</span>
                     )}
                   </div>
                 </div>

@@ -14,6 +14,7 @@ import { Product, useCommerce } from "@/contexts/CommerceContext";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 48) / 2;
+const formatNaira = (value: number) => `₦${value.toLocaleString("en-NG")}`;
 
 interface ProductCardProps {
   product: Product;
@@ -55,7 +56,7 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
         />
         {!product.inStock && (
           <View style={[styles.outOfStockBadge, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
-            <Text style={styles.outOfStockText}>Sold Out</Text>
+            <Text style={styles.outOfStockText}>Unavailable</Text>
           </View>
         )}
         {discount && (
@@ -82,11 +83,11 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
         <Text style={[styles.brand, { color: colors.mutedForeground }]}>bibiere</Text>
         <View style={styles.priceRow}>
           <Text style={[styles.price, { color: colors.burgundy }]}>
-            ${product.price}
+            {formatNaira(product.price)}
           </Text>
           {product.originalPrice && (
             <Text style={[styles.originalPrice, { color: colors.mutedForeground }]}>
-              ${product.originalPrice}
+              {formatNaira(product.originalPrice)}
             </Text>
           )}
         </View>
@@ -106,7 +107,7 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
               { color: product.inStock ? "#fff" : colors.mutedForeground },
             ]}
           >
-            {product.inStock ? "Add to Cart" : "Sold Out"}
+            {product.inStock ? "Made to Order" : "Unavailable"}
           </Text>
         </TouchableOpacity>
       </View>

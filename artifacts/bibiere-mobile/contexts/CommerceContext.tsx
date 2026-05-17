@@ -32,90 +32,8 @@ export interface WishlistItem {
   inStock: boolean;
 }
 
-const PRODUCTS: Product[] = [
-  {
-    id: "1",
-    name: "Elegant Black Silk Dress",
-    price: 299,
-    originalPrice: 399,
-    primaryImage: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=400&q=80",
-    category: "Dresses",
-    featured: true,
-    inStock: true,
-    brand: "bibiere",
-  },
-  {
-    id: "2",
-    name: "Cozy Wool Coat",
-    price: 599,
-    primaryImage: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=400&q=80",
-    category: "Outerwear",
-    featured: false,
-    inStock: false,
-    brand: "bibiere",
-  },
-  {
-    id: "3",
-    name: "Luxury Quilted Handbag",
-    price: 449,
-    primaryImage: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80",
-    category: "Accessories",
-    featured: true,
-    inStock: true,
-    brand: "bibiere",
-  },
-  {
-    id: "4",
-    name: "Premium Tailored Blazer",
-    price: 399,
-    primaryImage: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80",
-    category: "Blazers",
-    featured: false,
-    inStock: true,
-    brand: "bibiere",
-  },
-  {
-    id: "5",
-    name: "Cashmere Scarf",
-    price: 149,
-    primaryImage: "https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=400&q=80",
-    category: "Accessories",
-    featured: false,
-    inStock: true,
-    brand: "bibiere",
-  },
-  {
-    id: "6",
-    name: "Luxury Wristwatch",
-    price: 899,
-    primaryImage: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80",
-    category: "Accessories",
-    featured: true,
-    inStock: true,
-    brand: "bibiere",
-  },
-  {
-    id: "7",
-    name: "Satin Evening Gown",
-    price: 549,
-    originalPrice: 699,
-    primaryImage: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&q=80",
-    category: "Dresses",
-    featured: true,
-    inStock: true,
-    brand: "bibiere",
-  },
-  {
-    id: "8",
-    name: "Leather Ankle Boots",
-    price: 329,
-    primaryImage: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&q=80",
-    category: "Shoes",
-    featured: false,
-    inStock: true,
-    brand: "bibiere",
-  },
-];
+const PRODUCTS: Product[] = [];
+const PRODUCT_IDS = new Set(PRODUCTS.map((product) => product.id));
 
 interface CommerceContextType {
   products: Product[];
@@ -142,10 +60,22 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     AsyncStorage.getItem(CART_KEY).then((v) => {
-      if (v) setCart(JSON.parse(v));
+      if (!v) return;
+      const stored = JSON.parse(v) as CartItem[];
+      const productionItems = stored.filter((item) => PRODUCT_IDS.has(item.productId));
+      setCart(productionItems);
+      if (productionItems.length !== stored.length) {
+        AsyncStorage.setItem(CART_KEY, JSON.stringify(productionItems));
+      }
     });
     AsyncStorage.getItem(WISHLIST_KEY).then((v) => {
-      if (v) setWishlist(JSON.parse(v));
+      if (!v) return;
+      const stored = JSON.parse(v) as WishlistItem[];
+      const productionItems = stored.filter((item) => PRODUCT_IDS.has(item.productId));
+      setWishlist(productionItems);
+      if (productionItems.length !== stored.length) {
+        AsyncStorage.setItem(WISHLIST_KEY, JSON.stringify(productionItems));
+      }
     });
   }, []);
 

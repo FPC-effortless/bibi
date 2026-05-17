@@ -47,8 +47,8 @@ export default function HomeScreen() {
       {/* Featured Banner */}
       <View style={[styles.heroBanner, { backgroundColor: colors.burgundy }]}>
         <Text style={styles.heroTagline}>NEW COLLECTION</Text>
-        <Text style={styles.heroTitle}>Spring / Summer{"\n"}2025</Text>
-        <Text style={styles.heroSub}>Refined elegance for the discerning</Text>
+        <Text style={styles.heroTitle}>Made to Order{"\n"}by bibiere</Text>
+        <Text style={styles.heroSub}>Tailored pieces created after your order</Text>
       </View>
 
       {/* Featured Products */}
@@ -70,6 +70,14 @@ export default function HomeScreen() {
             </View>
           )}
         />
+        {products.length === 0 && (
+          <View style={styles.emptyCatalog}>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Catalog sync pending</Text>
+            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+              The live made-to-order catalog is available on the web store.
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Category Filter */}
@@ -198,4 +206,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
     justifyContent: "flex-start",
   },
+  emptyCatalog: {
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.65)",
+    gap: 6,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: "700" },
+  emptyText: { fontSize: 13, lineHeight: 19 },
 });

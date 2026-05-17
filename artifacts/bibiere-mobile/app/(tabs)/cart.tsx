@@ -14,6 +14,8 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { useCommerce } from "@/contexts/CommerceContext";
 
+const formatNaira = (value: number) => `₦${value.toLocaleString("en-NG")}`;
+
 export default function CartScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -59,7 +61,7 @@ export default function CartScreen() {
                     {item.name}
                   </Text>
                   <Text style={[styles.itemPrice, { color: colors.burgundy }]}>
-                    ${(item.price * item.quantity).toFixed(2)}
+                    {formatNaira(item.price * item.quantity)}
                   </Text>
                   <View style={styles.qtyRow}>
                     <TouchableOpacity
@@ -105,7 +107,7 @@ export default function CartScreen() {
             <View style={styles.totalRow}>
               <Text style={[styles.totalLabel, { color: colors.mutedForeground }]}>Total</Text>
               <Text style={[styles.totalAmount, { color: colors.burgundy }]}>
-                ${cartTotal.toFixed(2)}
+                {formatNaira(cartTotal)}
               </Text>
             </View>
             <TouchableOpacity

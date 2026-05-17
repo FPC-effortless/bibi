@@ -10,6 +10,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../lib/convex/convex/_generated/api";
 import { Order, WishlistItem } from "@/types";
 import { hasConvexConfig } from "@/lib/runtime-config";
+import { formatStoreCurrency } from "@/lib/currency-manager";
 
 const statusColors: Record<string, string> = {
   paid: "bg-green-100 text-green-800",
@@ -120,7 +121,7 @@ function AccountPageView({ orders, ordersLoading }: { orders: Order[]; ordersLoa
                               <Badge className={statusColors[order.status] ?? "bg-gray-100 text-gray-600"}>
                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </Badge>
-                              <p className="text-sm font-semibold">${Number(order.totalAmount).toFixed(2)}</p>
+                              <p className="text-sm font-semibold">{formatStoreCurrency(Number(order.totalAmount))}</p>
                             </div>
                           </div>
                         </div>
@@ -147,7 +148,7 @@ function AccountPageView({ orders, ordersLoading }: { orders: Order[]; ordersLoa
                             <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-muted" />
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate">{item.name}</p>
-                              <p className="text-bibiere-burgundy font-semibold">${Number(item.price).toFixed(2)}</p>
+                              <p className="text-bibiere-burgundy font-semibold">{formatStoreCurrency(Number(item.price))}</p>
                               <Link href="/wishlist" className="text-sm text-muted-foreground hover:text-bibiere-burgundy transition-colors">
                                 View all →
                               </Link>

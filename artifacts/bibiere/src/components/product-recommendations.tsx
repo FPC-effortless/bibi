@@ -2,9 +2,11 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Heart, ShoppingCart, Eye } from "lucide-react"
+import { Heart, Eye } from "lucide-react"
 import { useRecommendations } from "@/lib/recommendations"
 import { useAnalytics } from "@/lib/analytics"
+import { useCommerce } from "@/components/commerce-provider"
+import { formatStoreCurrency } from "@/lib/currency-manager"
 
 interface Product {
   id: string
@@ -48,10 +50,11 @@ export default function ProductRecommendations({
 
   const { getRecommendations, trackProductView } = useRecommendations()
   const { track, trackProductView: trackAnalytics } = useAnalytics()
+  const { products: catalogProducts } = useCommerce()
 
   useEffect(() => {
     loadRecommendations()
-  }, [userId, sessionId, currentProductId, category])
+  }, [userId, sessionId, currentProductId, category, catalogProducts])
 
   const loadRecommendations = async () => {
     try {
@@ -88,16 +91,16 @@ export default function ProductRecommendations({
   }
 
   const fetchProductDetails = async (productIds: string[]): Promise<Product[]> => {
-    // In a real implementation, this would fetch from your API
-    // For now, return mock data
-    return productIds.map(id => ({
-      id,
-      name: `Product ${id}`,
-      price: '$299',
-      primaryImage: '/placeholder-product.jpg',
-      category: 'Dresses',
-      rating: 4.5
-    }))
+    return catalogProducts
+      .filter((product) => productIds.includes(product.id))
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: formatStoreCurrency(product.price),
+        primaryImage: product.primaryImage,
+        category: product.category,
+        rating: 0,
+      }))
   }
 
   const handleProductClick = (product: Product, recommendation: RecommendationResult) => {
@@ -130,19 +133,6 @@ export default function ProductRecommendations({
     })
 
     // Add to wishlist logic would go here
-  }
-
-  const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    track('quick_add_from_recommendations', {
-      productId: product.id,
-      productName: product.name,
-      source: 'recommendations'
-    })
-
-    // Quick add to cart logic would go here
   }
 
   if (loading) {
@@ -214,14 +204,6 @@ export default function ProductRecommendations({
                       onClick={(e) => handleAddToWishlist(product, e)}
                     >
                       <Heart className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="bg-white/90 hover:bg-white text-foreground"
-                      onClick={(e) => handleQuickAdd(product, e)}
-                    >
-                      <ShoppingCart className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

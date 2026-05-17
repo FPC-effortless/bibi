@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { hasConvexConfig } from "@/lib/runtime-config";
 import { toast } from "sonner";
+import { formatStoreCurrency } from "@/lib/currency-manager";
 
 type ProductStatus = "draft" | "active" | "archived";
 type OrderStatus = "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled";
@@ -303,6 +304,7 @@ function ProductsAdmin() {
   const setStatus = useMutation(api.products.adminSetStatus);
   const setFeatured = useMutation(api.products.adminSetFeatured);
   const setInventory = useMutation(api.products.adminSetInventory);
+  const archiveSeedProducts = useMutation(api.products.adminArchiveSeedProducts);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const selectedProduct = products.find((product: any) => product._id === selectedProductId);
   const [form, setForm] = useState<ProductForm>(emptyProductForm);
@@ -343,19 +345,27 @@ function ProductsAdmin() {
     setForm(emptyProductForm);
   };
 
+  const archiveDemos = async () => {
+    const result = await archiveSeedProducts();
+    toast.success(`Archived ${result.archived} demo product${result.archived === 1 ? "" : "s"}`);
+  };
+
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
       <section className="rounded-lg border border-border bg-card p-4">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="font-serif text-2xl font-semibold">Catalog</h2>
-          <Button variant="outline" onClick={() => setSelectedProductId(null)}>New product</Button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="outline" onClick={archiveDemos}>Archive demo products</Button>
+            <Button variant="outline" onClick={() => setSelectedProductId(null)}>New product</Button>
+          </div>
         </div>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Product</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Inventory</TableHead>
+              <TableHead>Capacity</TableHead>
               <TableHead>Featured</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -365,7 +375,7 @@ function ProductsAdmin() {
               <TableRow key={product._id}>
                 <TableCell>
                   <div className="font-medium">{product.name}</div>
-                  <div className="text-xs text-muted-foreground">{product.category} · ${product.price}</div>
+                  <div className="text-xs text-muted-foreground">{product.category} · {formatStoreCurrency(product.price)}</div>
                 </TableCell>
                 <TableCell>
                   <Select
@@ -432,7 +442,7 @@ function ProductsAdmin() {
             <Input placeholder="Brand" value={form.brand} onChange={(e) => updateField("brand", e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Input placeholder="Inventory" type="number" value={form.inventoryCount} onChange={(e) => updateField("inventoryCount", e.target.value)} />
+            <Input placeholder="Production capacity" type="number" value={form.inventoryCount} onChange={(e) => updateField("inventoryCount", e.target.value)} />
             <Input placeholder="Sort order" type="number" value={form.sortOrder} onChange={(e) => updateField("sortOrder", e.target.value)} />
           </div>
           <Select value={form.status} onValueChange={(value) => updateField("status", value as ProductStatus)}>
@@ -448,7 +458,7 @@ function ProductsAdmin() {
             </label>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={form.inStock} onChange={(e) => updateField("inStock", e.target.checked)} />
-              In stock
+              Accepting orders
             </label>
           </div>
           <Textarea placeholder="Description" value={form.description} onChange={(e) => updateField("description", e.target.value)} />
@@ -568,10 +578,36 @@ function ContentPagesAdmin() {
 function OrdersAdmin() {
   const orders = useQuery(api.payments.adminList) ?? [];
   const updateStatus = useMutation(api.payments.adminUpdateStatus);
+  const [selectedOrderId, setSelectedOrderId] = useState<any>(null);
+  const selectedOrder = useQuery(
+    api.payments.adminGet,
+    selectedOrderId ? { orderId: selectedOrderId } : "skip",
+  );
+  const activeOrders = orders.filter((order: any) => !["shipped", "delivered", "cancelled"].includes(order.status));
+  const paidOrders = orders.filter((order: any) => ["paid", "processing"].includes(order.status));
+  const revenue = orders
+    .filter((order: any) => order.status !== "cancelled")
+    .reduce((sum: number, order: any) => sum + order.totalAmount, 0);
 
   return (
-    <section className="rounded-lg border border-border bg-card p-4">
-      <h2 className="mb-4 font-serif text-2xl font-semibold">Orders</h2>
+    <section className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <p className="text-sm text-muted-foreground">Active orders</p>
+          <p className="mt-1 font-serif text-3xl font-semibold">{activeOrders.length}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-card p-4">
+          <p className="text-sm text-muted-foreground">In production queue</p>
+          <p className="mt-1 font-serif text-3xl font-semibold">{paidOrders.length}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-card p-4">
+          <p className="text-sm text-muted-foreground">Order value</p>
+          <p className="mt-1 font-serif text-3xl font-semibold">{formatStoreCurrency(revenue)}</p>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-4 font-serif text-2xl font-semibold">Orders</h2>
       <Table>
         <TableHeader>
           <TableRow>
@@ -581,6 +617,7 @@ function OrdersAdmin() {
             <TableHead>Total</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Payment Ref</TableHead>
+            <TableHead className="text-right">Details</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -592,9 +629,12 @@ function OrdersAdmin() {
                   {new Date(order._creationTime).toLocaleString()}
                 </div>
               </TableCell>
-              <TableCell>{order.customer?.email ?? "Unknown customer"}</TableCell>
+              <TableCell>
+                <div>{order.customerName ?? `${order.customer?.firstName ?? ""} ${order.customer?.lastName ?? ""}`.trim() ?? "Unknown customer"}</div>
+                <div className="text-xs text-muted-foreground">{order.customerEmail ?? order.customer?.email ?? "No email"}</div>
+              </TableCell>
               <TableCell>{order.itemCount}</TableCell>
-              <TableCell>{order.currency} {order.totalAmount}</TableCell>
+              <TableCell>{formatStoreCurrency(order.totalAmount)}</TableCell>
               <TableCell>
                 <Select
                   value={order.status}
@@ -607,12 +647,103 @@ function OrdersAdmin() {
                 </Select>
               </TableCell>
               <TableCell className="font-mono text-xs">{order.paystackReference ?? "none"}</TableCell>
+              <TableCell className="text-right">
+                <Button size="sm" variant="outline" onClick={() => setSelectedOrderId(order._id)}>
+                  Review
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       {orders.length === 0 && (
         <p className="py-10 text-center text-muted-foreground">No orders yet.</p>
+      )}
+      </div>
+
+      {selectedOrderId && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="font-serif text-2xl font-semibold">Made-to-order brief</h3>
+              <p className="font-mono text-xs text-muted-foreground">{selectedOrderId}</p>
+            </div>
+            <Button variant="outline" onClick={() => setSelectedOrderId(null)}>Close</Button>
+          </div>
+
+          {!selectedOrder ? (
+            <p className="py-8 text-center text-muted-foreground">Loading order details...</p>
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Items</h4>
+                  <div className="mt-2 divide-y divide-border rounded-lg border border-border">
+                    {selectedOrder.items.map((item: any) => (
+                      <div key={item._id} className="flex items-center justify-between gap-4 p-3">
+                        <div className="flex items-center gap-3">
+                          {item.image && <img src={item.image} alt="" className="h-14 w-14 rounded-md object-cover" />}
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {[
+                                `Qty ${item.quantity}`,
+                                item.color,
+                                item.size ? `Size ${item.size}` : "",
+                              ].filter(Boolean).join(" · ")}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="font-medium">{formatStoreCurrency(item.price * item.quantity)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border border-border p-4">
+                    <h4 className="font-medium">Measurements</h4>
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                      {selectedOrder.order.measurements || "No measurements provided."}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-border p-4">
+                    <h4 className="font-medium">Style notes</h4>
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                      {selectedOrder.order.productionNotes || "No style notes provided."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <aside className="space-y-3 rounded-lg border border-border p-4">
+                <h4 className="font-medium">Customer</h4>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Name</p>
+                    <p className="font-medium">{selectedOrder.order.customerName ?? selectedOrder.customer?.email ?? "Unknown"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Email</p>
+                    <p className="font-medium">{selectedOrder.order.customerEmail ?? selectedOrder.customer?.email ?? "No email"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Phone</p>
+                    <p className="font-medium">{selectedOrder.order.phone ?? "No phone"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Delivery address</p>
+                    <p className="font-medium">{selectedOrder.order.shippingAddress ?? "No address"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Needed by</p>
+                    <p className="font-medium">{selectedOrder.order.eventDate || "No date provided"}</p>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          )}
+        </div>
       )}
     </section>
   );

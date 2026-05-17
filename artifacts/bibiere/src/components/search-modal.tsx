@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Search, Loader2, TrendingUp, Filter, X, ArrowUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useCommerce } from "@/components/commerce-provider"
+import { formatStoreCurrency } from "@/lib/currency-manager"
 
 interface SearchModalProps {
   isOpen: boolean
@@ -285,7 +286,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     filters.showOnSale ||
     filters.showNew
 
-  const formatPrice = (price: number) => `$${price}`
+  const formatPrice = formatStoreCurrency
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

@@ -7,6 +7,7 @@ import { Link } from 'wouter'
 import { useToast } from "@/hooks/use-toast"
 import { useCommerce } from "@/components/commerce-provider"
 import { CartItem } from "@/types"
+import { formatStoreCurrency } from "@/lib/currency-manager"
 
 export function CartDrawer() {
   const { toast } = useToast()
@@ -14,27 +15,28 @@ export function CartDrawer() {
   const [processingProductId, setProcessingProductId] = useState<string | null>(null)
 
   const subtotal = useMemo(() => cart.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0), [cart])
-  const shipping = subtotal >= 100 ? 0 : (cart.length > 0 ? 25 : 0)
-  const total = subtotal + shipping
+  const total = subtotal
 
-  const updateQuantity = async (productId: string, newQuantity: number) => {
-    setProcessingProductId(productId)
-    await updateCartQuantity(productId, newQuantity)
+  const updateQuantity = async (item: CartItem, newQuantity: number) => {
+    const cartItemId = (item as any)._id ?? (item as any).id
+    setProcessingProductId(cartItemId)
+    await updateCartQuantity(cartItemId, newQuantity)
     setProcessingProductId(null)
   }
 
-  const moveToWishlist = async (productId: string, name: string) => {
-    setProcessingProductId(productId)
+  const moveToWishlist = async (item: CartItem) => {
+    const cartItemId = (item as any)._id ?? (item as any).id
+    setProcessingProductId(cartItemId)
 
-    if (!wishlistProductIds.has(productId)) {
-      await toggleWishlist(productId)
+    if (!wishlistProductIds.has(item.productId)) {
+      await toggleWishlist(item.productId)
     }
 
-    await updateCartQuantity(productId, 0)
+    await updateCartQuantity(cartItemId, 0)
     setProcessingProductId(null)
     toast({
       title: "Moved to wishlist",
-      description: `${name} has been moved to your wishlist.`,
+      description: `${item.name} has been moved to your wishlist.`,
     })
   }
 
@@ -79,9 +81,10 @@ export function CartDrawer() {
             ) : (
               <div className="space-y-6">
                 {cart.map((item: CartItem) => {
-                  const isUpdating = processingProductId === item.productId
+                  const cartItemId = (item as any)._id ?? (item as any).id
+                  const isUpdating = processingProductId === cartItemId
                   return (
-                    <div key={item._id} className={`flex space-x-4 ${isUpdating ? "opacity-60" : ""}`}>
+                    <div key={cartItemId} className={`flex space-x-4 ${isUpdating ? "opacity-60" : ""}`}>
                       <div className="relative w-20 h-20 rounded-md overflow-hidden">
                         <img src={item.image || "/placeholder.svg"} alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
                       </div>
@@ -89,25 +92,25 @@ export function CartDrawer() {
                         <h3 className="font-medium line-clamp-2">{item.name}</h3>
                         <p className="text-sm text-muted-foreground">{item.color} {item.size ? `• Size ${item.size}` : ""}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <p className="font-medium">${item.price.toLocaleString()}</p>
+                          <p className="font-medium">{formatStoreCurrency(item.price)}</p>
                         </div>
 
                         <div className="flex items-center space-x-2 mt-3">
-                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item.productId, item.quantity - 1)} disabled={isUpdating || item.quantity <= 1} className="h-8 w-8 p-0">
+                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item, item.quantity - 1)} disabled={isUpdating || item.quantity <= 1} className="h-8 w-8 p-0">
                             {isUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Minus className="h-3 w-3" />}
                           </Button>
                           <span className="w-12 text-center font-medium">{item.quantity}</span>
-                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item.productId, item.quantity + 1)} disabled={isUpdating} className="h-8 w-8 p-0">
+                          <Button variant="outline" size="sm" onClick={() => updateQuantity(item, item.quantity + 1)} disabled={isUpdating} className="h-8 w-8 p-0">
                             {isUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
                           </Button>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => moveToWishlist(item.productId, item.name)} disabled={isUpdating} className="h-8 w-8 p-0 text-muted-foreground hover:text-pink-600" title="Move to wishlist">
+                          <Button variant="ghost" size="sm" onClick={() => moveToWishlist(item)} disabled={isUpdating} className="h-8 w-8 p-0 text-muted-foreground hover:text-pink-600" title="Move to wishlist">
                             {isUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Heart className="h-3 w-3" />}
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => updateQuantity(item.productId, 0)} disabled={isUpdating} className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" title="Remove from cart">
+                          <Button variant="ghost" size="sm" onClick={() => updateQuantity(item, 0)} disabled={isUpdating} className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" title="Remove from cart">
                             {isUpdating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                           </Button>
                         </div>
@@ -124,15 +127,15 @@ export function CartDrawer() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal ({cartCount} items)</span>
-                  <span>${subtotal.toLocaleString()}</span>
+                  <span>{formatStoreCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>Shipping</span>
-                  <span className={shipping === 0 ? "text-green-600" : ""}>{shipping === 0 ? "Free" : `$${shipping}`}</span>
+                  <span>Production</span>
+                  <span>Made to order</span>
                 </div>
                 <div className="flex justify-between font-medium text-lg border-t pt-2">
                   <span>Total</span>
-                  <span>${total.toLocaleString()}</span>
+                  <span>{formatStoreCurrency(total)}</span>
                 </div>
               </div>
 
@@ -145,7 +148,7 @@ export function CartDrawer() {
                 </Button>
               </div>
 
-              <p className="text-xs text-muted-foreground text-center">Free shipping on orders over $100</p>
+              <p className="text-xs text-muted-foreground text-center">Shipping is confirmed after order review.</p>
             </div>
           )}
         </div>

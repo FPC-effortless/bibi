@@ -12,26 +12,26 @@ const faqCategories = [
   {
     title: "Orders & Shipping",
     questions: [
-      { question: "How long does shipping take?", answer: "Standard shipping takes 3-5 business days within the US. Express shipping (1-2 business days) and international shipping options are also available. Free shipping is offered on orders over $500." },
-      { question: "Can I track my order?", answer: "Yes! Once your order ships, you'll receive a tracking number via email. You can also track your order by logging into your account and visiting the Order History section." },
-      { question: "Do you ship internationally?", answer: "Yes, we ship to over 50 countries worldwide. International shipping rates and delivery times vary by destination. Customs duties and taxes may apply." },
-      { question: "Can I change or cancel my order?", answer: "Orders can be modified or cancelled within 1 hour of placement. After this window, orders enter processing and cannot be changed. Please contact customer service immediately if you need assistance." },
+      { question: "When does production start?", answer: "Production starts after payment is confirmed and your measurements or fit notes have been reviewed by the bibiere team." },
+      { question: "How long will my order take?", answer: "Each piece is made to order. Timing depends on the style, quantity, and delivery location. If you have an event date, add it at checkout so the team can review it before production." },
+      { question: "Can I track my order?", answer: "Yes. Your account shows the current order status, and customer care can help with production or delivery updates using your order reference." },
+      { question: "Can I change or cancel my order?", answer: "Contact customer care as soon as possible. Changes are easiest before fabric is cut; once production begins, changes may be limited." },
     ],
   },
   {
     title: "Returns & Exchanges",
     questions: [
-      { question: "What is your return policy?", answer: "We offer a 30-day return policy for unworn items in original condition with tags attached. Items must be returned in original packaging. Some exclusions apply to final sale items." },
-      { question: "How do I return an item?", answer: "Log into your account, go to Order History, and select 'Return Items'. Print the prepaid return label and drop off at any UPS location. Returns are processed within 5-7 business days." },
-      { question: "Can I exchange for a different size?", answer: "Yes! We offer free exchanges for different sizes within 30 days. Use our online exchange portal or contact customer service for assistance." },
+      { question: "Can made-to-order pieces be returned?", answer: "Because each garment is made for the client, personalized or altered pieces are not returnable unless they arrive damaged, incorrect, or not aligned with the confirmed order details." },
+      { question: "What if there is a fit issue?", answer: "Contact customer care with your order reference and clear photos. The team will review whether an adjustment, alteration, or remake support is appropriate." },
+      { question: "Can I exchange for a different size?", answer: "Standard size exchanges are limited for made-to-order garments. Share accurate measurements at checkout so the team can review fit before production." },
     ],
   },
   {
     title: "Sizing & Fit",
     questions: [
-      { question: "How do I find my size?", answer: "Use our detailed size guide available on each product page. We provide measurements in both US and international sizes. For personalized fit advice, contact our styling team." },
-      { question: "What if I'm between sizes?", answer: "We generally recommend sizing up if you're between sizes, especially for tailored pieces. Each product page includes fit notes and model measurements for reference." },
-      { question: "Do your clothes run true to size?", answer: "Our pieces are designed to fit true to size based on our size chart. However, fit can vary by style and personal preference. Check individual product reviews for fit feedback." },
+      { question: "How do I submit my measurements?", answer: "Add your key measurements at checkout, including bust, waist, hips, shoulder, sleeve, length, height, and preferred fit." },
+      { question: "What if I'm between sizes?", answer: "Choose the closest standard size and add measurement notes. The team reviews the notes before production begins." },
+      { question: "Can I request style adjustments?", answer: "Yes. Use the style notes field at checkout for modesty preferences, sleeve changes, length changes, or occasion details." },
     ],
   },
   {
@@ -39,7 +39,7 @@ const faqCategories = [
     questions: [
       { question: "How should I care for my bibiere pieces?", answer: "Each item comes with specific care instructions on the label. Generally, we recommend dry cleaning for silk and wool items, and gentle machine washing for cotton pieces." },
       { question: "Are your products sustainable?", answer: "Sustainability is core to our brand. We use ethically sourced materials, work with certified suppliers, and focus on creating timeless pieces that last." },
-      { question: "Where are your products made?", answer: "Our pieces are crafted by skilled artisans in Italy, Portugal, and select facilities known for their expertise in luxury fashion manufacturing." },
+      { question: "Where are your products made?", answer: "bibiere pieces are made after order by the production team and tailoring partners selected by the brand." },
     ],
   },
 ];

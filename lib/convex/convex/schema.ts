@@ -61,7 +61,13 @@ export default defineSchema({
     currency: v.string(),
     paystackReference: v.optional(v.string()),
     paystackStatus: v.optional(v.string()),
+    customerName: v.optional(v.string()),
+    customerEmail: v.optional(v.string()),
+    phone: v.optional(v.string()),
     shippingAddress: v.optional(v.string()),
+    measurements: v.optional(v.string()),
+    productionNotes: v.optional(v.string()),
+    eventDate: v.optional(v.string()),
     updatedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
@@ -73,6 +79,8 @@ export default defineSchema({
     name: v.string(),
     price: v.number(),
     quantity: v.number(),
+    size: v.optional(v.string()),
+    color: v.optional(v.string()),
     image: v.optional(v.string()),
   }).index("by_order", ["orderId"]),
 

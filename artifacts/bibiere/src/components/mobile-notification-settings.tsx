@@ -179,10 +179,10 @@ export default function MobileNotificationSettings() {
                   <Heart className="h-4 w-4 text-bibiere-burgundy" />
                   <div>
                     <Label htmlFor="back-in-stock" className="text-sm font-medium">
-                      Back in Stock
+                      Order Availability
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Alerts when wishlist items become available
+                      Alerts when wishlist items are accepting new orders
                     </p>
                   </div>
                 </div>

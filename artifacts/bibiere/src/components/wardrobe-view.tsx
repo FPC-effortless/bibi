@@ -16,43 +16,7 @@ interface WardrobeItem {
 
 export default function WardrobeView() {
   const { toast } = useToast()
-  const [wardrobeItems] = useState<WardrobeItem[]>([
-    {
-      id: "1",
-      name: "Classic Black Dress",
-      image: "/elegant-black-silk-dress.png",
-      purchaseDate: "2024-01-15",
-      productUrl: "/product/1",
-    },
-    {
-      id: "2",
-      name: "Cashmere Scarf",
-      image: "/cashmere-scarf.png",
-      purchaseDate: "2024-02-03",
-      productUrl: "/product/2",
-    },
-    {
-      id: "3",
-      name: "Designer Handbag",
-      image: "/luxury-quilted-handbag.png",
-      purchaseDate: "2024-01-28",
-      productUrl: "/product/3",
-    },
-    {
-      id: "4",
-      name: "Luxury Watch",
-      image: "/luxury-wristwatch.png",
-      purchaseDate: "2024-02-10",
-      productUrl: "/product/4",
-    },
-    {
-      id: "5",
-      name: "Wool Coat",
-      image: "/cozy-wool-coat.png",
-      purchaseDate: "2024-01-20",
-      productUrl: "/product/5",
-    },
-  ])
+  const [wardrobeItems] = useState<WardrobeItem[]>([])
 
   const viewProduct = (item: WardrobeItem) => {
     toast({

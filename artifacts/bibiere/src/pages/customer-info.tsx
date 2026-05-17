@@ -15,11 +15,11 @@ const fallbackPages: Record<string, InfoPageContent> = {
   returns: {
     eyebrow: "Customer care",
     title: "Returns & Exchanges",
-    intro: "A calm, clear returns process for luxury pieces that need a different fit or finish.",
+    intro: "A clear support process for made-to-order pieces that need review, adjustment, or correction.",
     sections: [
-      { title: "Return window", body: "Eligible unworn items may be returned within 14 days of delivery with original tags and packaging." },
-      { title: "Exchange support", body: "Size and color exchanges are supported when inventory is available. Contact customer care with your order number to begin." },
-      { title: "Final sale", body: "Personalized, altered, and final-sale items cannot be returned unless they arrive damaged or incorrect." },
+      { title: "Made-to-order policy", body: "Personalized garments are not returnable unless they arrive damaged, incorrect, or materially different from the confirmed order details." },
+      { title: "Fit support", body: "If there is a fit concern, contact customer care with your order reference, photos, and measurement notes for review." },
+      { title: "Before production", body: "Changes are easiest before fabric is cut. Contact customer care quickly if you need to update measurements or styling notes." },
     ],
   },
   "track-order": {
@@ -28,18 +28,18 @@ const fallbackPages: Record<string, InfoPageContent> = {
     intro: "Sign in to view your latest orders, payment status, and fulfillment progress.",
     sections: [
       { title: "Account tracking", body: "Your account page lists current and past orders as soon as checkout is completed." },
-      { title: "Dispatch updates", body: "Shipping updates are sent to the email used at checkout once an order moves into fulfillment." },
+      { title: "Production updates", body: "Order statuses show whether payment is pending, paid, processing, shipped, delivered, or cancelled." },
       { title: "Need help?", body: "If an order looks delayed or incomplete, contact customer care with your order reference." },
     ],
   },
   "size-guide": {
     eyebrow: "Fit guide",
     title: "Size Guide",
-    intro: "Use these notes as a starting point for selecting refined, comfortable silhouettes.",
+    intro: "Use these notes as a starting point, then add your measurements at checkout for made-to-order review.",
     sections: [
-      { title: "Dresses and tailoring", body: "Choose your usual size for a close fit, or size up if you prefer an easier drape through the waist and shoulders." },
-      { title: "Outerwear", body: "Coats and blazers are cut to layer over light knitwear. Size up for heavier layering." },
-      { title: "Accessories", body: "Accessory sizing and dimensions are listed on each product detail page when available." },
+      { title: "Core measurements", body: "Include bust, waist, hips, shoulder, sleeve, preferred length, height, and usual size." },
+      { title: "Fit preference", body: "Mention whether you prefer a close, relaxed, modest, or occasion-specific fit." },
+      { title: "Event timing", body: "Add your needed-by date at checkout so the team can review timing before production." },
     ],
   },
   privacy: {
@@ -57,8 +57,8 @@ const fallbackPages: Record<string, InfoPageContent> = {
     title: "Terms of Service",
     intro: "These terms describe the expectations for using the bibiere storefront and purchasing products.",
     sections: [
-      { title: "Product information", body: "We aim to keep product descriptions, pricing, and availability accurate. Availability may change before checkout is completed." },
-      { title: "Orders", body: "Orders are accepted after payment authorization and may be cancelled if fraud checks, inventory, or payment confirmation fail." },
+      { title: "Product information", body: "We aim to keep product descriptions, pricing, and order availability accurate. Availability may change before checkout is completed." },
+      { title: "Orders", body: "Orders are accepted after payment confirmation and may be cancelled if fraud checks, production capacity, or order details cannot be resolved." },
       { title: "Site use", body: "Do not misuse the storefront, attempt unauthorized access, or interfere with customer and admin systems." },
     ],
   },
@@ -77,7 +77,7 @@ const fallbackPages: Record<string, InfoPageContent> = {
     intro: "Our sustainability work focuses on responsible assortment decisions and longer product lifecycles.",
     sections: [
       { title: "Buy better", body: "We prioritize pieces that can be styled repeatedly across seasons rather than disposable trend cycles." },
-      { title: "Operational care", body: "Inventory visibility and order accuracy help reduce waste from overselling and unnecessary returns." },
+      { title: "Operational care", body: "Made-to-order production helps reduce waste by creating pieces after a client places an order." },
     ],
   },
   careers: {

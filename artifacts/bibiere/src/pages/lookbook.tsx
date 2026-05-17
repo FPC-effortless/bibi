@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, Share2, ShoppingBag, Eye } from "lucide-react";
+import { formatStoreCurrency } from "@/lib/currency-manager";
 
 interface Look {
   id: string;
@@ -152,10 +153,10 @@ function LookCard({ look }: { look: Look }) {
           <p className="text-sm font-medium">Shop the Look</p>
           {look.pieces.map((piece) => (
             <div key={piece.id} className="flex items-center justify-between text-sm">
-              <Link href={`/product/${piece.id}`} className="text-bibiere-burgundy hover:underline">
+              <Link href="/collections" className="text-bibiere-burgundy hover:underline">
                 {piece.name}
               </Link>
-              <span className="text-muted-foreground">${piece.price}</span>
+              <span className="text-muted-foreground">{formatStoreCurrency(piece.price)}</span>
             </div>
           ))}
         </div>

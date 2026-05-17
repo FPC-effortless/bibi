@@ -1,8 +1,10 @@
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Edit, ShoppingBag } from "lucide-react"
 import type { ShippingData, PaymentData } from "./shipping-form"
+import { useCommerce } from "@/components/commerce-provider"
+import { CartItem } from "@/types"
+import { formatStoreCurrency } from "@/lib/currency-manager"
 
 interface OrderReviewProps {
   shippingData: ShippingData
@@ -11,37 +13,15 @@ interface OrderReviewProps {
   onComplete: () => void
 }
 
-const cartItems = [
-  {
-    id: 1,
-    name: "Elegant Silk Dress",
-    color: "Black",
-    size: "M",
-    price: 299.0,
-    quantity: 1,
-    image: "/elegant-black-silk-dress.png",
-  },
-  {
-    id: 2,
-    name: "Cashmere Scarf",
-    color: "Cream",
-    size: "One Size",
-    price: 89.0,
-    quantity: 1,
-    image: "/cashmere-scarf.png",
-  },
-]
-
 export default function OrderReview({ shippingData, paymentData, onBack, onComplete }: OrderReviewProps) {
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = 15.0
+  const { cart: cartItems } = useCommerce()
+  const subtotal = cartItems.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0)
   const discount = paymentData.couponCode ? subtotal * 0.1 : 0
-  const total = subtotal + shipping - discount
+  const total = subtotal - discount
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Order Summary */}
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-2xl font-serif text-foreground flex items-center gap-2">
@@ -51,8 +31,10 @@ export default function OrderReview({ shippingData, paymentData, onBack, onCompl
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex gap-4 pb-4 border-b border-border last:border-b-0">
+              {cartItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Your cart is empty.</p>
+              ) : cartItems.map((item: CartItem) => (
+                <div key={(item as any)._id ?? (item as any).id ?? item.productId} className="flex gap-4 pb-4 border-b border-border last:border-b-0">
                   <img
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}
@@ -61,12 +43,12 @@ export default function OrderReview({ shippingData, paymentData, onBack, onCompl
                   <div className="flex-1">
                     <h4 className="font-medium text-foreground">{item.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {item.color} • Size {item.size}
+                      {item.color ?? "Default"} - Size {item.size ?? "One Size"}
                     </p>
                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-foreground">${item.price.toFixed(2)}</p>
+                    <p className="font-medium text-foreground">{formatStoreCurrency(item.price)}</p>
                   </div>
                 </div>
               ))}
@@ -81,9 +63,7 @@ export default function OrderReview({ shippingData, paymentData, onBack, onCompl
           </CardContent>
         </Card>
 
-        {/* Order Details */}
         <div className="space-y-6">
-          {/* Shipping Address */}
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-serif text-foreground">Shipping Address</CardTitle>
@@ -100,7 +80,6 @@ export default function OrderReview({ shippingData, paymentData, onBack, onCompl
             </CardContent>
           </Card>
 
-          {/* Payment Method */}
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-serif text-foreground">Payment Method</CardTitle>
@@ -113,7 +92,6 @@ export default function OrderReview({ shippingData, paymentData, onBack, onCompl
             </CardContent>
           </Card>
 
-          {/* Order Total */}
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-serif text-foreground">Order Total</CardTitle>
@@ -122,22 +100,18 @@ export default function OrderReview({ shippingData, paymentData, onBack, onCompl
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="text-foreground">${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className="text-foreground">${shipping.toFixed(2)}</span>
+                  <span className="text-foreground">{formatStoreCurrency(subtotal)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Discount</span>
-                    <span className="text-accent">-${discount.toFixed(2)}</span>
+                    <span className="text-accent">-{formatStoreCurrency(discount)}</span>
                   </div>
                 )}
                 <div className="border-t border-border pt-2">
                   <div className="flex justify-between font-medium text-lg">
                     <span className="text-foreground">Total</span>
-                    <span className="text-foreground">${total.toFixed(2)}</span>
+                    <span className="text-foreground">{formatStoreCurrency(total)}</span>
                   </div>
                 </div>
               </div>
@@ -155,6 +129,7 @@ export default function OrderReview({ shippingData, paymentData, onBack, onCompl
             </Button>
             <Button
               onClick={onComplete}
+              disabled={cartItems.length === 0}
               className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3"
             >
               Complete Order

@@ -1,34 +1,21 @@
-import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, Lock } from "lucide-react";
 import { useCommerce } from "@/components/commerce-provider";
 import { CartItem } from "@/types";
+import { formatStoreCurrency } from "@/lib/currency-manager";
 
 export default function CartPage() {
   const { cart, updateCartQuantity } = useCommerce();
-  const [promoCode, setPromoCode] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
   const updateQuantity = async (item: CartItem, newQuantity: number) => {
-    await updateCartQuantity(item.productId, newQuantity);
-  };
-
-  const applyPromoCode = () => {
-    if (promoCode.trim().toLowerCase() === "welcome10") {
-      setAppliedPromo("WELCOME10");
-      setPromoCode("");
-    }
+    await updateCartQuantity((item as any)._id ?? (item as any).id, newQuantity);
   };
 
   const subtotal = cart.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
-  const discount = appliedPromo ? subtotal * 0.1 : 0;
-  const shipping = subtotal > 500 || subtotal === 0 ? 0 : 25;
-  const tax = (subtotal - discount) * 0.08;
-  const total = subtotal - discount + shipping + tax;
+  const total = subtotal;
 
   if (cart.length === 0) {
     return (
@@ -81,6 +68,11 @@ export default function CartPage() {
                       <div>
                         <h3 className="font-serif font-semibold text-lg">{item.name}</h3>
                         {item.brand && <p className="text-sm text-muted-foreground mt-1">{item.brand}</p>}
+                        {(item.size || item.color) && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {[item.color, item.size ? `Size ${item.size}` : ""].filter(Boolean).join(" - ")}
+                          </p>
+                        )}
                         {item.quantity >= 5 && (
                           <Badge variant="secondary" className="mt-2">
                             Quantity {item.quantity}
@@ -119,9 +111,9 @@ export default function CartPage() {
                         </Button>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">${item.price.toLocaleString()}</div>
+                        <div className="font-semibold">{formatStoreCurrency(item.price)}</div>
                         <div className="text-sm text-muted-foreground">
-                          ${(item.price * item.quantity).toLocaleString()} total
+                          {formatStoreCurrency(item.price * item.quantity)} total
                         </div>
                       </div>
                     </div>
@@ -137,51 +129,21 @@ export default function CartPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                {appliedPromo && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount ({appliedPromo})</span>
-                    <span>-${discount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  <span>{formatStoreCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>Production</span>
+                  <span>Made to order</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>{formatStoreCurrency(total)}</span>
                 </div>
               </div>
-              {shipping > 0 && (
-                <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
-                  Add ${(500 - subtotal).toFixed(2)} more for free shipping
-                </div>
-              )}
-            </div>
-
-            <div className="border border-border rounded-lg p-6 space-y-4">
-              <h3 className="font-semibold">Promo Code</h3>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter code"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && applyPromoCode()}
-                />
-                <Button variant="outline" onClick={applyPromoCode}>
-                  Apply
-                </Button>
+              <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
+                Shipping is confirmed after tailoring details and delivery location are reviewed.
               </div>
-              {appliedPromo && (
-                <div className="text-sm text-green-600">{appliedPromo} applied (10% off)</div>
-              )}
             </div>
 
             <Button asChild size="lg" className="w-full bg-bibiere-burgundy hover:bg-bibiere-burgundy-dark text-white">

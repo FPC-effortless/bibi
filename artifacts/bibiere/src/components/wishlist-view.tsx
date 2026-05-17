@@ -10,15 +10,15 @@ import { WishlistItem } from "@/types"
 
 export default function WishlistView() {
   const { toast } = useToast()
-  const { wishlist, addProductToCart, toggleWishlist } = useCommerce()
+  const { wishlist, toggleWishlist } = useCommerce()
   const [sortBy, setSortBy] = useState<"dateAdded" | "price" | "name">("dateAdded")
-  const [filterBy, setFilterBy] = useState<"all" | "inStock" | "onSale">("all")
+  const [filterBy, setFilterBy] = useState<"all" | "available" | "onSale">("all")
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [processingItems, setProcessingItems] = useState<Set<string>>(new Set())
 
   const sortedItems = useMemo(() => {
     const filtered = wishlist.filter((item: WishlistItem) => {
-      if (filterBy === "inStock") return item.inStock
+      if (filterBy === "available") return item.inStock
       if (filterBy === "onSale") return Boolean(item.originalPrice && item.originalPrice > item.price)
       return true
     })
@@ -55,33 +55,6 @@ export default function WishlistView() {
     })
   }
 
-  const addToCart = async (productId: string, name: string, removeAfter = false) => {
-    setProcessingItems((prev) => new Set(prev).add(productId))
-    await addProductToCart(productId)
-    if (removeAfter) {
-      await toggleWishlist(productId)
-    }
-    setProcessingItems((prev) => {
-      const clone = new Set(prev)
-      clone.delete(productId)
-      return clone
-    })
-
-    toast({
-      title: "Added to cart",
-      description: removeAfter ? `${name} has been added to your cart and removed from wishlist.` : `${name} has been added to your cart.`,
-    })
-  }
-
-  const addSelectedToCart = async () => {
-    const selected = sortedItems.filter((item) => selectedItems.has(item.productId) && item.inStock)
-    for (const item of selected) {
-      // eslint-disable-next-line no-await-in-loop
-      await addToCart(item.productId, item.name, true)
-    }
-    setSelectedItems(new Set())
-  }
-
   return (
     <div className="p-8">
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -101,12 +74,9 @@ export default function WishlistView() {
             </select>
             <select value={filterBy} onChange={(e) => setFilterBy(e.target.value as typeof filterBy)} className="border rounded-md px-3 py-2 bg-background text-sm">
               <option value="all">All</option>
-              <option value="inStock">In Stock</option>
+              <option value="available">Accepting Orders</option>
               <option value="onSale">On Sale</option>
             </select>
-            <Button variant="outline" onClick={addSelectedToCart} disabled={selectedItems.size === 0}>
-              Add Selected to Cart
-            </Button>
           </div>
         )}
       </div>
@@ -148,7 +118,7 @@ export default function WishlistView() {
                   />
                   {!item.inStock && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <span className="bg-white text-black px-3 py-1 rounded-full text-sm font-medium">Out of Stock</span>
+                      <span className="bg-white text-black px-3 py-1 rounded-full text-sm font-medium">Unavailable</span>
                     </div>
                   )}
                   {hasDiscount && item.inStock && (
@@ -167,23 +137,24 @@ export default function WishlistView() {
 
                   <div className="mb-4">
                     <div className="flex items-center gap-2">
-                      <p className="font-sans text-lg font-semibold text-card-foreground">${item.price.toLocaleString()}</p>
-                      {hasDiscount && <p className="font-sans text-sm text-muted-foreground line-through">${item.originalPrice!.toLocaleString()}</p>}
+                      <p className="font-sans text-lg font-semibold text-card-foreground">₦{item.price.toLocaleString()}</p>
+                      {hasDiscount && <p className="font-sans text-sm text-muted-foreground line-through">₦{item.originalPrice!.toLocaleString()}</p>}
                     </div>
-                    {hasDiscount && <p className="text-xs text-green-600 font-medium">Save ${(item.originalPrice! - item.price).toLocaleString()}</p>}
+                    {hasDiscount && <p className="text-xs text-green-600 font-medium">Save ₦{(item.originalPrice! - item.price).toLocaleString()}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Button onClick={() => addToCart(item.productId, item.name, true)} disabled={!item.inStock || isProcessing} className="w-full">
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Adding...
-                        </>
-                      ) : (
-                        "Add to Cart & Remove"
-                      )}
-                    </Button>
+                    {item.inStock ? (
+                      <Button asChild disabled={isProcessing} className="w-full">
+                        <Link href={`/product/${item.productId}`}>
+                          Choose Details
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button disabled className="w-full">
+                        Unavailable
+                      </Button>
+                    )}
 
                     <Button variant="outline" onClick={() => removeFromWishlist(item.productId, item.name)} disabled={isProcessing} className="w-full">
                       {isProcessing ? (

@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, CreditCard, MapPin, Package, Lock, ShoppingBag } from "lucide-react";
 import { useUser, Show } from "@clerk/react";
 import { useCommerce } from "@/components/commerce-provider";
 import { useAction } from "convex/react";
 import { api } from "../../../../lib/convex/convex/_generated/api";
 import { CartItem } from "@/types";
+import { formatStoreCurrency } from "@/lib/currency-manager";
 
 type Step = 1 | 2;
 
@@ -77,6 +79,9 @@ export default function CheckoutPage() {
     state: "",
     zip: "",
     country: "NG",
+    measurements: "",
+    productionNotes: "",
+    eventDate: "",
   });
 
   const subtotal = cart.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
@@ -89,9 +94,14 @@ export default function CheckoutPage() {
       const data = await initializePayment({
         email: shipping.email,
         currency: "NGN",
+        callbackUrl: `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/order-confirmed`,
         metadata: {
           shipping: `${shipping.address}, ${shipping.city}, ${shipping.state} ${shipping.zip}, ${shipping.country}`,
           customerName: `${shipping.firstName} ${shipping.lastName}`,
+          phone: shipping.phone,
+          measurements: shipping.measurements,
+          productionNotes: shipping.productionNotes,
+          eventDate: shipping.eventDate,
         },
       });
       
@@ -139,7 +149,10 @@ export default function CheckoutPage() {
                 <div className="lg:col-span-2 space-y-8">
                   {step === 1 && (
                     <div className="space-y-6">
-                      <h2 className="text-2xl font-serif font-bold">Shipping Information</h2>
+                      <h2 className="text-2xl font-serif font-bold">Order Details</h2>
+                      <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+                        Every piece is made after your order is placed. Add accurate measurements and any fit notes now so the production team has what they need.
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>
@@ -198,6 +211,15 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div className="space-y-2">
+                          <Label htmlFor="state">State</Label>
+                          <Input
+                            id="state"
+                            value={shipping.state}
+                            onChange={(e) => setShipping({ ...shipping, state: e.target.value })}
+                            placeholder="Lagos"
+                          />
+                        </div>
+                        <div className="space-y-2">
                           <Label htmlFor="zip">Postal Code</Label>
                           <Input
                             id="zip"
@@ -206,10 +228,40 @@ export default function CheckoutPage() {
                             placeholder="100001"
                           />
                         </div>
+                        <div className="col-span-2 space-y-2">
+                          <Label htmlFor="measurements">Measurements</Label>
+                          <Textarea
+                            id="measurements"
+                            className="min-h-28"
+                            value={shipping.measurements}
+                            onChange={(e) => setShipping({ ...shipping, measurements: e.target.value })}
+                            placeholder="Bust, waist, hips, shoulder, sleeve, length, height, preferred fit"
+                          />
+                        </div>
+                        <div className="col-span-2 grid gap-4 sm:grid-cols-[1fr_180px]">
+                          <div className="space-y-2">
+                            <Label htmlFor="productionNotes">Style or fit notes</Label>
+                            <Textarea
+                              id="productionNotes"
+                              value={shipping.productionNotes}
+                              onChange={(e) => setShipping({ ...shipping, productionNotes: e.target.value })}
+                              placeholder="Occasion, modesty preferences, sleeve changes, length changes"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="eventDate">Needed by</Label>
+                            <Input
+                              id="eventDate"
+                              type="date"
+                              value={shipping.eventDate}
+                              onChange={(e) => setShipping({ ...shipping, eventDate: e.target.value })}
+                            />
+                          </div>
+                        </div>
                       </div>
                       <Button
                         className="w-full bg-bibiere-burgundy hover:bg-bibiere-burgundy/90 text-white"
-                        disabled={!shipping.firstName || !shipping.email || !shipping.address}
+                        disabled={!shipping.firstName || !shipping.email || !shipping.phone || !shipping.address || !shipping.city || !shipping.state || !shipping.measurements}
                         onClick={() => setStep(2)}
                       >
                         Continue to Payment
@@ -226,6 +278,17 @@ export default function CheckoutPage() {
                         <p className="font-medium">{shipping.firstName} {shipping.lastName}</p>
                         <p className="text-sm text-muted-foreground">{shipping.address}, {shipping.city} {shipping.zip}</p>
                         <p className="text-sm text-muted-foreground">{shipping.email}</p>
+                        {shipping.eventDate && (
+                          <p className="text-sm text-muted-foreground">Needed by {new Date(shipping.eventDate).toLocaleDateString()}</p>
+                        )}
+                      </div>
+
+                      <div className="bg-muted/40 rounded-xl p-4 space-y-3">
+                        <p className="text-sm font-medium text-muted-foreground">Production notes</p>
+                        <p className="whitespace-pre-wrap text-sm text-foreground">{shipping.measurements}</p>
+                        {shipping.productionNotes && (
+                          <p className="whitespace-pre-wrap text-sm text-muted-foreground">{shipping.productionNotes}</p>
+                        )}
                       </div>
 
                       <div className="border border-border rounded-xl p-4 space-y-3">
@@ -234,8 +297,8 @@ export default function CheckoutPage() {
                           Secured by Paystack
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          You'll be redirected to Paystack's secure payment page to complete your purchase. 
-                          We accept cards, bank transfers, and mobile money.
+                          You'll be redirected to Paystack's secure payment page to complete your purchase.
+                          Production begins after payment is confirmed.
                         </p>
                         <div className="flex gap-2 pt-1">
                           {["Visa", "Mastercard", "Verve"].map((brand) => (
@@ -269,7 +332,7 @@ export default function CheckoutPage() {
                           ) : (
                             <>
                               <Lock className="w-4 h-4" />
-                              Pay ₦{total.toLocaleString("en-NG", { minimumFractionDigits: 2 })}
+                              Pay {formatStoreCurrency(total)}
                             </>
                           )}
                         </Button>
@@ -290,10 +353,16 @@ export default function CheckoutPage() {
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">Qty {item.quantity}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {[
+                              `Qty ${item.quantity}`,
+                              item.color,
+                              item.size ? `Size ${item.size}` : "",
+                            ].filter(Boolean).join(" · ")}
+                          </p>
                         </div>
                         <span className="text-sm font-medium flex-shrink-0">
-                          ₦{(item.price * item.quantity).toLocaleString()}
+                          {formatStoreCurrency(item.price * item.quantity)}
                         </span>
                       </div>
                     ))}
@@ -302,20 +371,20 @@ export default function CheckoutPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Subtotal</span>
-                      <span>₦{subtotal.toLocaleString()}</span>
+                      <span>{formatStoreCurrency(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Shipping</span>
-                      <span className="text-green-600">Free</span>
+                    <span>Production</span>
+                    <span>Made to order</span>
                     </div>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total</span>
-                    <span>₦{total.toLocaleString()}</span>
+                    <span>{formatStoreCurrency(total)}</span>
                   </div>
                   <Badge className="w-full justify-center bg-green-50 text-green-700 border-green-200">
-                    Free shipping on this order
+                    Tailoring details collected
                   </Badge>
                   <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground pt-1">
                     <Lock className="w-3 h-3" />

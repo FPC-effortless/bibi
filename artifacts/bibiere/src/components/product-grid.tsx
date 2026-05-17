@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useCommerce } from "@/components/commerce-provider"
 import { Product } from "@/types"
+import { formatStoreCurrency } from "@/lib/currency-manager"
 
 interface ProductGridProps {
   title?: string
@@ -24,7 +25,7 @@ export default function ProductGrid({
   maxItems,
   className,
 }: ProductGridProps) {
-  const { products, loading, wishlistProductIds, toggleWishlist, addProductToCart } = useCommerce()
+  const { products, loading, wishlistProductIds, toggleWishlist } = useCommerce()
 
   const displayProducts = useMemo(
     () => products
@@ -42,16 +43,6 @@ export default function ProductGrid({
     const isWishlisted = wishlistProductIds.has(productId)
     await toggleWishlist(productId)
     toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist")
-  }
-
-  const handleAddToCart = async (productId: string) => {
-    const product = products.find((p: Product) => p.id === productId)
-    if (!product) {
-      return
-    }
-
-    await addProductToCart(productId)
-    toast.success(`${product.name} added to cart`)
   }
 
   if (loading) {
@@ -83,12 +74,11 @@ export default function ProductGrid({
             <ProductCard
               id={product.id}
               name={product.name}
-              price={`$${product.price}`}
+              price={formatStoreCurrency(product.price)}
               primaryImage={product.primaryImage}
               hoverImage={product.hoverImage || ""}
               isWishlisted={wishlistProductIds.has(product.id)}
               onWishlistToggle={handleWishlistToggle}
-              onAddToCart={handleAddToCart}
               className={cn("h-full", product.featured && "ring-2 ring-bibiere-gold/20")}
             />
           </div>
